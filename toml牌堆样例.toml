@@ -1,0 +1,59 @@
+# 元信息
+[meta]
+title = "toml牌堆样例"
+author = "JustAnotherID（769506457）"
+version = "1.0"
+license = "CC-BY-NC-SA 4.0"
+date = 2023-09-03
+update_date = 2023-09-30
+desc = "这是一个toml牌堆的样例"
+update_urls = [
+    "https://ghproxy.com/https://raw.githubusercontent.com/JustAnotherID/just-another-deck-repo/master/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B.toml",
+    "https://github.com/JustAnotherID/just-another-deck-repo/blob/master/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B.toml",
+]
+
+# 简单牌组
+[decks]
+
+"简单牌组" = [
+    "option1",
+    "option2",
+    """\
+多行文本
+多行文本
+多行文本
+多行文本
+多行文本""",
+]
+
+"_隐藏牌组" = [
+    "option1",
+    "option2",
+]
+
+"__不导出牌组" = [
+    "option1",
+    "option2",
+]
+
+# 复杂牌组
+["复杂牌组"]
+# 是否导出
+export = true
+# key是否可见
+visible = true
+# 别名
+aliases = ["复杂牌组1", "复杂牌组2", "复杂牌组3" ]
+# 本地选项
+options = [
+    "option1",
+]
+# 开启云内容
+cloud_extra = true
+# 云内容与本地内容去重
+dictinct = true
+# 云内容链接
+options_urls = [
+    "https://ghproxy.com/https://raw.githubusercontent.com/JustAnotherID/just-another-deck-repo/master/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B-%E4%BA%91%E5%86%85%E5%AE%B9.json",
+    "https://raw.githubusercontent.com/JustAnotherID/just-another-deck-repo/master/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B-%E4%BA%91%E5%86%85%E5%AE%B9.json",
+]
