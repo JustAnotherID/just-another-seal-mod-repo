@@ -8,8 +8,8 @@ date = 2023-09-03
 update_date = 2023-09-30
 desc = "这是一个toml牌堆的样例"
 update_urls = [
-    "https://ghproxy.com/https://raw.githubusercontent.com/JustAnotherID/just-another-deck-repo/master/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B.toml",
-    "https://github.com/JustAnotherID/just-another-deck-repo/blob/master/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B.toml",
+    "https://ghproxy.com/https://raw.githubusercontent.com/JustAnotherID/just-another-seal-mod-repo/master/deck/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B.toml",
+    "https://raw.githubusercontent.com/JustAnotherID/just-another-seal-mod-repo/master/deck/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B.toml",
 ]
 
 # 简单牌组
@@ -54,6 +54,6 @@ cloud_extra = true
 dictinct = true
 # 云内容链接
 options_urls = [
-    "https://ghproxy.com/https://raw.githubusercontent.com/JustAnotherID/just-another-deck-repo/master/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B-%E4%BA%91%E5%86%85%E5%AE%B9.json",
-    "https://raw.githubusercontent.com/JustAnotherID/just-another-deck-repo/master/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B-%E4%BA%91%E5%86%85%E5%AE%B9.json",
+    "https://ghproxy.com/https://raw.githubusercontent.com/JustAnotherID/just-another-seal-mod-repo/master/deck/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B-%E4%BA%91%E5%86%85%E5%AE%B9.json",
+    "https://raw.githubusercontent.com/JustAnotherID/just-another-seal-mod-repo/master/deck/toml%E7%89%8C%E5%A0%86%E6%A0%B7%E4%BE%8B-%E4%BA%91%E5%86%85%E5%AE%B9.json",
 ]
