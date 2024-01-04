@@ -1,6 +1,6 @@
 {
   "name": "jiaozi",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "海豹骰插件，提供文本和饺子码的互相转换。",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
