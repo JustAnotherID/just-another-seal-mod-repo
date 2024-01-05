@@ -1,18 +1,45 @@
 /*
- * 饺子码编码格式：'饺'=0 '子'=1
+ * 饺子码编码格式：'饺'=0 '子'=1 '吃'=2 '?'=3 '？'=4 '!'=5 '！'=6 '~'=7
  * 版本号 3bit + 编码方式 1 bit
  * 版本号 001 作为未控制包头的旧饺子码版本号
- * 版本号 010 为当前版本（版本 2）
+ * 版本号 010（版本 2）开始控制包头长度
+ * 版本号 011 为当前版本（版本 3），升级为 8 进制
  */
 
 import { gzip, ungzip } from 'pako';
 
 export function text2jiaozi(text: string): string {
-  return text2jiaoziV2(text);
+  return text2jiaoziV3(text);
 }
 
 /**
- * 编码饺子码v1
+ * 编码饺子码v3
+ *
+ * @param text 文本
+ * @returns 饺子码v1
+ */
+export function text2jiaoziV3(text: string): string {
+  const rawStr = stringToUtf8ByteArray(text)
+    .map((i) => i.toString(8).padStart(3, '0'))
+    .join('');
+  const compressed = Array.from(gzip(text, { level: 9 }) as Uint8Array)
+    .map((i) => i.toString(8).padStart(3, '0'))
+    .join('');
+  let bits;
+  if (compressed.length < rawStr.length) {
+    // 编码方式 1 为 gzip 压缩
+    const prefix = '0111';
+    bits = `${prefix}${compressed}`;
+  } else {
+    // 编码方式 0 为 utf8 原始编码
+    const prefix = '0110';
+    bits = `${prefix}${rawStr}`;
+  }
+  return bits2JiaoziChars(bits);
+}
+
+/**
+ * 编码饺子码v2
  *
  * @param text 文本
  * @returns 饺子码v1
@@ -75,6 +102,35 @@ export function jiaozi2text(jiaozi: string): string | undefined {
     // 010: 饺子码v2
     case '饺子饺':
       return jiaozi2textV2(jiaozi);
+    // 011: 饺子码v3
+    case '饺子子':
+      return jiaozi2textV3(jiaozi);
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * 解析饺子码v3
+ */
+function jiaozi2textV3(jiaozi: string): string | undefined {
+  const format = jiaozi.slice(3, 4);
+  switch (format) {
+    // 编码方式 0 为 utf8 原始编码
+    case '饺':
+      return utf8ByteArrayToString(
+        jiaoziChars2bits(jiaozi.slice(4))
+          .match(/.{3}/g)
+          .map((i) => parseInt(i, 8))
+      );
+    // 编码方式 1 为 gzip 压缩
+    case '子':
+      const bits = new Uint8Array(
+        jiaoziChars2bits(jiaozi.slice(4))
+          .match(/.{3}/g)
+          .map((i) => parseInt(i, 8))
+      );
+      return ungzip(bits, { to: 'string' });
     default:
       return undefined;
   }
@@ -228,6 +284,18 @@ function bits2JiaoziChars(bits: string) {
         return '饺';
       } else if (bit === '1') {
         return '子';
+      } else if (bit === '2') {
+        return '吃';
+      } else if (bit === '3') {
+        return '?';
+      } else if (bit === '4') {
+        return '？';
+      } else if (bit === '5') {
+        return '!';
+      } else if (bit === '6') {
+        return '！';
+      } else if (bit === '7') {
+        return '~';
       } else {
         return '';
       }
@@ -243,6 +311,18 @@ function jiaoziChars2bits(jiaozi: string) {
         return '0';
       } else if (c === '子') {
         return '1';
+      } else if (c === '吃') {
+        return '2';
+      } else if (c === '?') {
+        return '3';
+      } else if (c === '？') {
+        return '4';
+      } else if (c === '!') {
+        return '5';
+      } else if (c === '！') {
+        return '6';
+      } else if (c === '~') {
+        return '7';
       } else {
         return '';
       }

@@ -7,8 +7,9 @@ function main() {
     seal.ext.register(ext);
   }
 
-  const help =
-    '文本和饺子码的互相转换。\n.饺子 <文本> // 将文本转换为饺子码\n.子饺 <饺子码> // 将饺子码转换回文本';
+  const help = `文本和饺子码的互相转换。
+.饺子 <文本> // 将文本转换为饺子码
+.吃饺子 <饺子码> // 将饺子码转换回文本`;
 
   const cmdJiaozi = seal.ext.newCmdItemInfo();
   cmdJiaozi.name = '饺子';
@@ -23,7 +24,7 @@ function main() {
         return ret;
       }
       default: {
-        seal.replyToSender(ctx, msg, text2jiaozi(val));
+        seal.replyToSender(ctx, msg, text2jiaozi(cmdArgs.rawArgs));
         return seal.ext.newCmdExecuteResult(true);
       }
     }
@@ -42,7 +43,7 @@ function main() {
         return ret;
       }
       default: {
-        const res = jiaozi2text(val)
+        const res = jiaozi2text(val);
         if (res) {
           seal.replyToSender(ctx, msg, `饺子码解析：【${res}】`);
         } else {
@@ -55,6 +56,7 @@ function main() {
 
   ext.cmdMap['饺子'] = cmdJiaozi;
   ext.cmdMap['子饺'] = cmdZijiao;
+  ext.cmdMap['吃饺子'] = cmdZijiao;
 }
 
 main();
