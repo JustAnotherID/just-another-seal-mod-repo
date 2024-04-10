@@ -9,6 +9,10 @@
 import { gzip, ungzip } from 'pako';
 
 export function text2jiaozi(text: string): string {
+  return text2jiaoziV2(text);
+}
+
+export function text2jiaoziCompress(text: string): string {
   return text2jiaoziV3(text);
 }
 
