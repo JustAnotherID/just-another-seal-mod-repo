@@ -1,10 +1,14 @@
 import { isFinite } from 'lodash-es';
 import { getState, setState } from './store';
+import { validateOCModeTemperature, validateTemperature } from './utils';
 
 export const menuHandle = (ext: seal.ExtInfo, groupId: string): string => {
   const state = getState(ext, groupId);
   let text = `当前空调${state.open ? '已开启' : '已关闭'}`;
   if (state.open) {
+    if (state.ocMode) {
+      text += `[已超频]`;
+    }
     text += `\n模式：${state.mode}`;
     if (['制冷', '制热', '除湿'].includes(state.mode)) {
       text += `\n温度：${state.temperature}°C`;
@@ -24,11 +28,15 @@ export const openCloseHandle = (
     // init
     state.mode = '制冷';
     state.temperature = 26;
+    state.ocMode = false;
   }
   setState(ext, groupId, state);
 
   if (state.open) {
     let text = `空调已经开启，当前为${state.mode}模式`;
+    if (state.ocMode) {
+      text += `[已超频]`;
+    }
     if (['制冷', '制热', '除湿'].includes(state.mode)) {
       text += `，温度 ${state.temperature}°C`;
     }
@@ -75,7 +83,8 @@ export const modeHandle = (
 export const temperatureHandle = (
   ext: seal.ExtInfo,
   groupId: string,
-  temperature: string
+  val1: string,
+  val2: string
 ): string => {
   const state = getState(ext, groupId);
   if (!state.open) {
@@ -84,40 +93,92 @@ export const temperatureHandle = (
     return `当前空调为${state.mode}模式`;
   }
 
-  if (temperature) {
-    if (temperature.startsWith('+') || temperature.startsWith('-')) {
-      let sign = temperature.startsWith('+') ? 1 : -1;
-      temperature = temperature.slice(1);
-      let temp = Number(temperature);
-      if (isFinite(temp)) {
-        let newTemperature = state.temperature + temp * sign;
-        if (newTemperature % 0.5 !== 0) {
-          return '温度调整格式错误，温度只能以 0.5 为间隔';
-        } else if (newTemperature < 16 || newTemperature > 32) {
-          return '温度调整格式错误，温度只能在 16°C 到 32°C 之间';
+  if (val1) {
+    let newTemperature: number;
+    if (state.ocMode) {
+      // 超频模式下，输入 .温度 - 10（带空格）意味着降低 10 度，而 .温度 -10（不带空格）意味着指定温度为 -10
+      if (
+        (val1 === '-' || val1 === '+') &&
+        !val2?.startsWith('-') &&
+        !val2?.startsWith('+')
+      ) {
+        let temp = Number(val2);
+        if (isFinite(temp)) {
+          newTemperature = state.temperature + (val1 === '-' ? -temp : temp);
         }
-        state.temperature = newTemperature;
-        setState(ext, groupId, state);
-        return `温度已调整为 ${state.temperature}°C`;
+      } else if (val1.startsWith('+')) {
+        let temp = Number(val1);
+        if (isFinite(temp)) {
+          newTemperature = state.temperature + temp;
+        }
       } else {
-        return '温度调整格式错误，请输入「.温度 [+/-]<温度>」来升高或降低温度';
+        newTemperature = Number(val1);
       }
     } else {
-      let newTemperature = Number(temperature);
-      if (isFinite(newTemperature)) {
-        if (newTemperature % 0.5 !== 0) {
-          return '温度调整格式错误，温度只能以 0.5 为间隔';
-        } else if (newTemperature < 16 || newTemperature > 32) {
-          return '温度调整格式错误，温度只能在 16°C 到 32°C 之间';
+      if (
+        (val1 === '-' || val1 === '+') &&
+        !val2?.startsWith('-') &&
+        !val2?.startsWith('+')
+      ) {
+        let temp = Number(val2);
+        if (isFinite(temp)) {
+          newTemperature = state.temperature + (val1 === '-' ? -temp : temp);
         }
-        state.temperature = newTemperature;
-        setState(ext, groupId, state);
-        return `温度已调整为 ${state.temperature}°C`;
+      } else if (val1.startsWith('+') || val1.startsWith('-')) {
+        let temp = Number(val1);
+        if (isFinite(temp)) {
+          newTemperature = state.temperature + temp;
+        }
       } else {
-        return '温度调整格式错误，请输入「.温度 <温度>」来直接指定温度';
+        newTemperature = Number(val1);
       }
     }
+
+    if (isFinite(newTemperature)) {
+      let ok: boolean;
+      let err: string;
+
+      if (state.ocMode) {
+        [ok, err] = validateOCModeTemperature(newTemperature);
+      } else {
+        [ok, err] = validateTemperature(newTemperature);
+      }
+      if (!ok) {
+        return '温度调整失败，' + err;
+      }
+      state.temperature = newTemperature;
+      setState(ext, groupId, state);
+      return `温度已调整为 ${state.temperature}°C`;
+    } else {
+      return '温度调整失败，请输入「.温度 <温度>」来直接指定温度，或输入「.温度 [+/-] <温度>」来升高或降低温度';
+    }
   } else {
-    return '温度调整格式错误，未指定值';
+    return '温度调整失败，未指定值';
   }
+};
+
+export const ocModeHandle = (
+  ext: seal.ExtInfo,
+  groupId: string,
+  ocMode: boolean
+): string => {
+  const state = getState(ext, groupId);
+  if (!state.open) {
+    return '空调未开启';
+  }
+  state.ocMode = ocMode;
+
+  let text: string;
+  if (state.ocMode) {
+    text = '超频模式已开启';
+  } else {
+    text = '超频模式已关闭';
+    let [ok, _] = validateTemperature(state.temperature);
+    if (!ok) {
+      state.temperature = 26;
+      text += '，当前温度已调整为 26°C';
+    }
+  }
+  setState(ext, groupId, state);
+  return text;
 };

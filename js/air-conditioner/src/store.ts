@@ -2,6 +2,7 @@ export interface State {
   open: boolean;
   mode: string;
   temperature: number;
+  ocMode: boolean; // 超频模式
 }
 
 export const getState = (ext: seal.ExtInfo, group: string): State => {
@@ -13,6 +14,7 @@ export const getState = (ext: seal.ExtInfo, group: string): State => {
       open: false,
       mode: '制冷',
       temperature: 26,
+      ocMode: false
     };
   }
 };

@@ -1,6 +1,6 @@
 {
   "name": "air-conditioner",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "海豹骰插件，提供群空调功能。",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
