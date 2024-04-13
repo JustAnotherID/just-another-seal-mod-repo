@@ -1,0 +1,47 @@
+{
+  "name": "air-conditioner",
+  "version": "1.0.0",
+  "description": "海豹骰插件，提供群空调功能。",
+  "main": "build/index.js",
+  "typings": "build/index.d.ts",
+  "repository": "https://github.com/JustAnotherID/just-another-seal-mod-repo/js/air-conditioner",
+  "license": "MIT",
+  "keywords": [
+    "sealdice",
+    "plugin"
+  ],
+  "scripts": {
+    "build": "cross-env NODE_ENV=production node tools/build.js",
+    "build-dev": "cross-env NODE_ENV=dev node tools/build.js"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "dependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "esbuild": "^0.17.19",
+    "lodash-es": "^4.17.21"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "fs-extra": "^11.2.0",
+    "source-map-support": "^0.5.21"
+  },
+  "files": [
+    "build/main",
+    "build/module",
+    "!**/*.spec.*",
+    "!**/*.json",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "prettier": {
+    "singleQuote": true
+  }
+}
