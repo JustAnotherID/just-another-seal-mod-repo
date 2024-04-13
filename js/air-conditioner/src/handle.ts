@@ -86,10 +86,11 @@ export const temperatureHandle = (
 
   if (temperature) {
     if (temperature.startsWith('+') || temperature.startsWith('-')) {
+      let sign = temperature.startsWith('+') ? 1 : -1;
       temperature = temperature.slice(1);
       let temp = Number(temperature);
       if (isFinite(temp)) {
-        let newTemperature = state.temperature + temp;
+        let newTemperature = state.temperature + temp * sign;
         if (newTemperature % 0.5 !== 0) {
           return '温度调整格式错误，温度只能以 0.5 为间隔';
         } else if (newTemperature < 16 || newTemperature > 32) {
