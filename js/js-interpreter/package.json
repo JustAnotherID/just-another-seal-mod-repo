@@ -1,0 +1,47 @@
+{
+  "name": "js-interpreter",
+  "version": "1.0.0",
+  "description": "海豹骰插件，提供 js 解释器。",
+  "main": "build/index.js",
+  "typings": "build/index.d.ts",
+  "repository": "https://github.com/JustAnotherID/just-another-seal-mod-repo/js/js-interpreter",
+  "license": "MIT",
+  "keywords": [
+    "sealdice",
+    "plugin"
+  ],
+  "scripts": {
+    "build": "cross-env NODE_ENV=production node tools/build.js",
+    "build-dev": "cross-env NODE_ENV=dev node tools/build.js"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "dependencies": {
+    "@babel/standalone": "^7.24.4",
+    "esbuild": "^0.17.19",
+    "js-interpreter": "^5.1.1"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "fs-extra": "^11.2.0",
+    "source-map-support": "^0.5.21"
+  },
+  "files": [
+    "build/main",
+    "build/module",
+    "!**/*.spec.*",
+    "!**/*.json",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "prettier": {
+    "singleQuote": true
+  }
+}
