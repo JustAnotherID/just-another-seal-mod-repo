@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         掷筊
 // @author       JustAnotherID
-// @version      1.1.0
+// @version      1.1.1
 // @description  使用 .掷筊/掷杯 help 查看帮助   1.1.0-增加 .求解 指令
 // @timestamp    2024-04-11 11:45:14
 // @license      MIT
@@ -187,7 +187,7 @@
 \u6C42\u89E3\u8BF7\u4F7F\u7528\u300C.\u6C42\u89E3\u300D`,c="",s=0;for(let a=0;a<t;a++){a!==0&&(c+=`
 `);let n=u(0,1),r=u(0,1);n^r?(c+="\u5723\u7B4A\uFF08\u4E00\u9634\u4E00\u9633\uFF09",s=s*10+1):n===0?(c+="\u54ED\u7B4A\uFF08\u4E8C\u9634\uFF09",s=s*10):(c+="\u7B11\u7B4A\uFF08\u4E8C\u9633\uFF09",s=s*10+2)}return[s,l+c+m]},w=e=>{if(e.times<3)return"\u63B7\u5723\u676F\u6B21\u6570\u4E0D\u8DB3\u4E09\u6B21";{let t=b(e.resKey);return`\u524D\u4E09\u6B21\u7684\u63B7\u5723\u676F\u7ED3\u679C\uFF1A${t.name}
 \u300C${t.type}\u300D
-${t.desc}`}};function C(){let e=seal.ext.find("zhijiao");e||(e=seal.ext.new("zhijiao","JustAnotherID","1.1.0"),seal.ext.register(e));let t=`\u63B7\u7B4A
+${t.desc}`}};function C(){let e=seal.ext.find("zhijiao");e||(e=seal.ext.new("zhijiao","JustAnotherID","1.1.1"),seal.ext.register(e));let t=`\u63B7\u7B4A
 .\u63B7\u7B4A/\u63B7\u676F <\u539F\u56E0> // \u63B7\u7B4A
 .\u63B7\u4E09\u6B21 <\u539F\u56E0> // \u63B7\u7B4A\u4E09\u6B21
 .\u6C42\u89E3 // \u89E3\u8BFB\u4E0A\u4E00\u6B21\u7ED3\u679C`,l=(a,n,r,p)=>{switch(r.getArgN(1)){case"":case"help":{let o=seal.ext.newCmdExecuteResult(!0);return o.showHelp=!0,o}default:return seal.replyToSender(a,n,p),seal.ext.newCmdExecuteResult(!0)}},m=seal.ext.newCmdItemInfo();m.name="\u63B7\u7B4A",m.help=t,m.solve=(a,n,r)=>{var h;let p=n.sender.userId,[y,o]=f(r.rawArgs,1),g=i(p),d=k(e.storageGet(g)),D=((h=d==null?void 0:d.resKey)!=null?h:0)%100*10+y,I=d.times>=3?3:d.times+1,M=x(D,I);return e.storageSet(g,M),l(a,n,r,o)};let c=seal.ext.newCmdItemInfo();c.name="\u63B7\u4E09\u6B21",c.help=t,c.solve=(a,n,r)=>{let p=n.sender.userId,[y,o]=f(r.rawArgs,3);return e.storageSet(i(p),x(y,3)),l(a,n,r,o)};let s=seal.ext.newCmdItemInfo();s.name="\u6C42\u89E3",s.help=t,s.solve=(a,n,r)=>{let p=k(e.storageGet(i(n.sender.userId)));switch(r.getArgN(1)){case"help":{let o=seal.ext.newCmdExecuteResult(!0);return o.showHelp=!0,o}default:return seal.replyToSender(a,n,w(p)),seal.ext.newCmdExecuteResult(!0)}},e.cmdMap.\u63B7\u7B4A=m,e.cmdMap.\u63B7\u676F=m,e.cmdMap.\u63B7\u4E09\u6B21=c,e.cmdMap.\u6C42\u89E3=s}C();})();

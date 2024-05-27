@@ -3,7 +3,7 @@ import { text2SealCode, sealCode2text, text2SealCodeCompress } from './utils';
 function main() {
   let ext = seal.ext.find('seal-code');
   if (!ext) {
-    ext = seal.ext.new('seal-code', 'JustAnotherID', '1.0.0');
+    ext = seal.ext.new('seal-code', 'JustAnotherID', '1.0.1');
     seal.ext.register(ext);
   }
 

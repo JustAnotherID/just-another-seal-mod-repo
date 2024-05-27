@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         二进制海豹
 // @author       JustAnotherID
-// @version      1.0.0
+// @version      1.0.1
 // @description  提供文本和海豹码互相转换的命令，使用 .海豹 help 查看帮助。修改自二进制饺子插件。
 // @timestamp    2024-04-13 11:45:14
 // @license      MIT

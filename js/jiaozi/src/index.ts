@@ -3,7 +3,7 @@ import { text2jiaozi, jiaozi2text, text2jiaoziCompress } from './utils';
 function main() {
   let ext = seal.ext.find('jiaozi');
   if (!ext) {
-    ext = seal.ext.new('jiaozi', 'JustAnotherID', '1.0.0');
+    ext = seal.ext.new('jiaozi', 'JustAnotherID', '1.2.2');
     seal.ext.register(ext);
   }
 

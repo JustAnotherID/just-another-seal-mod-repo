@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         二进制饺子
 // @author       JustAnotherID
-// @version      1.2.1
+// @version      1.2.2
 // @description  提供文本和饺子码互相转换的命令，大家一起来吃饺子吧！使用 .饺子 help 查看帮助
 // @timestamp    2024-01-04 11:45:14
 // @license      MIT

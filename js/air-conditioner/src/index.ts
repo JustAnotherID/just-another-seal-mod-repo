@@ -20,7 +20,7 @@ const helpDesc = `\
 function main() {
   let ext = seal.ext.find('air-conditioner');
   if (!ext) {
-    ext = seal.ext.new('air-conditioner', 'JustAnotherID', '1.1.0');
+    ext = seal.ext.new('air-conditioner', 'JustAnotherID', '1.1.1');
     seal.ext.register(ext);
   }
 

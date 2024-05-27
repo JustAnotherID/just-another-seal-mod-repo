@@ -2,7 +2,7 @@ import Interpreter from 'js-interpreter';
 import * as Babel from '@babel/standalone';
 
 if (!seal.ext.find('js-interpreter')) {
-  const ext = seal.ext.new('js-interpreter', 'JustAnotherID', '1.0.0');
+  const ext = seal.ext.new('js-interpreter', 'JustAnotherID', '1.0.1');
   seal.ext.register(ext);
 
   seal.ext.registerTemplateConfig(

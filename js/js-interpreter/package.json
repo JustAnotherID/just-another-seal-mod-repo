@@ -1,6 +1,6 @@
 {
   "name": "js-interpreter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "海豹骰插件，提供 js 解释器。",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
@@ -19,11 +19,14 @@
   },
   "dependencies": {
     "@babel/standalone": "^7.24.4",
-    "esbuild": "^0.17.19",
-    "js-interpreter": "^5.1.1"
+    "js-interpreter": "^5.1.1",
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "@types/babel__standalone": "^7.1.7",
     "cross-env": "^7.0.3",
+    "esbuild": "^0.21.4",
     "fs-extra": "^11.2.0",
     "source-map-support": "^0.5.21"
   },

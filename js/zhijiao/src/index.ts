@@ -4,7 +4,7 @@ import { buildData, buildKey, parseData } from "./tool";
 function main() {
   let ext = seal.ext.find('zhijiao');
   if (!ext) {
-    ext = seal.ext.new('zhijiao', 'JustAnotherID', '1.1.0');
+    ext = seal.ext.new('zhijiao', 'JustAnotherID', '1.1.1');
     seal.ext.register(ext);
   }
 
