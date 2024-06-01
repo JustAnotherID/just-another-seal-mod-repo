@@ -205,6 +205,11 @@ declare namespace seal {
     find(name: string): ExtInfo;
 
     newCmdItemInfo(): CmdItemInfo;
+
+    /** 注册整数配置项 */
+    registerIntConfig(ext: ExtInfo, key: string, value: number): void;
+    /** 读取整数配置项 */
+    getIntConfig(ext: ExtInfo, key: string): number;
   };
 
   interface CocRuleInfo {

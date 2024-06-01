@@ -1,14 +1,16 @@
 import {
-  autoAttackHandle,
+  timerAttackHandle,
   defenseHandle,
   startHandle,
   manualAttackHandle,
   statusHandle,
-  stopHandle
+  stopHandle,
+  useConsumableHandle
 } from './handle';
-import { VERSION } from "./consts";
+import { DefaultCreatureIntervals, VERSION } from "./consts";
 import { Action, Creature } from "./types";
 import { getCreature } from "./utils";
+import { Consumable } from "./items";
 
 // @ts-ignore
 let timer: number = undefined
@@ -16,8 +18,8 @@ let timer: number = undefined
 const startTimer = (ext: seal.ExtInfo) => {
   if (timer === undefined) {
     timer = setInterval(() => {
-      autoAttackHandle(ext)
-    }, 1000 * 10)
+      timerAttackHandle(ext)
+    }, 1000 * 30)
   }
 }
 
@@ -39,6 +41,10 @@ const helpDesc = `\
 当有对应生物活动时，可以使用如下命令攻击：
 #拍 // 攻击蚊子
 #踩 // 攻击蟑螂
+
+可以解锁更多命令
+#点蚊香
+#放蟑螂屋
 `;
 
 function main() {
@@ -64,6 +70,7 @@ function main() {
         ret.showHelp = true;
         return ret;
       case '开始':
+      case '开启':
         seal.replyToSender(ctx, msg, startHandle(ext, ctx.endPoint.userId, msg.groupId, msg.guildId, msg.sender.userId));
         return seal.ext.newCmdExecuteResult(true);
       case '停止':
@@ -72,7 +79,6 @@ function main() {
       case '释放':
         let creatureCmd = cmdArgs.getArgN(2)
         let creature = undefined
-        let result = ''
         switch (creatureCmd) {
           case '蚊子':
             creature = Creature.mosquito
@@ -84,9 +90,9 @@ function main() {
             seal.replyToSender(ctx, msg, "当前不支持该生物");
             return seal.ext.newCmdExecuteResult(true);
         }
-        result = manualAttackHandle(ext, msg.groupId, creature)
+        let [result, count, migrate] = manualAttackHandle(ext, msg.groupId, msg.sender.userId, creature)
         const creatureName = getCreature(creature, true);
-        result = `<${msg.sender.nickname}>向群里释放了一些${creatureName}，当前活动中的${creatureName}：\n${result}`
+        result = `<${msg.sender.nickname}>向群里释放了 ${count + migrate} 只 ${creatureName}，当前活动中的${creatureName}：\n${result}`
         seal.replyToSender(ctx, msg, result);
         return seal.ext.newCmdExecuteResult(true);
       default:
@@ -104,11 +110,18 @@ function main() {
       result = defenseHandle(ext, msg.groupId, msg.sender.userId, Action.beat);
     } else if (message === '#踩' || message === '#踩死') {
       result = defenseHandle(ext, msg.groupId, msg.sender.userId, Action.stepOn);
+    } else if (message === '#点蚊香' || message === '#放蚊香') {
+      result = useConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.mosquitoRepellentIncense);
+    } else if (message === '#放蟑螂屋') {
+      result = useConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.cockroachTrap);
     }
     if (result) {
       seal.replyToSender(ctx, msg, result);
     }
   }
+
+  seal.ext.registerIntConfig(ext, "蚊子活动间隔/min", DefaultCreatureIntervals[Creature.mosquito] / 60);
+  seal.ext.registerIntConfig(ext, "蟑螂活动间隔/min", DefaultCreatureIntervals[Creature.cockroach] / 60);
 
   startTimer(ext)
 }

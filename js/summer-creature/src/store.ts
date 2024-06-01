@@ -1,34 +1,34 @@
-import { VERSION } from "./consts";
-import { Creature, GroupState, Points, State, UserPoint } from "./types";
+import {
+  Achievement,
+  Creature,
+  GroupState,
+  UserInfo,
+} from "./types";
+import { uniq } from "lodash-es";
 
-export const getState = (ext: seal.ExtInfo): State => {
-  let temp = ext.storageGet('summer_creature_status');
+export const getGroups = (ext: seal.ExtInfo): string[] => {
+  let temp = ext.storageGet('summer_creature_groups');
   if (temp) {
-    let state = JSON.parse(temp);
-    // console.log('get state:', JSON.stringify(state));
-    return state;
+    return JSON.parse(temp);
   } else {
-    let state = { version: VERSION, groups: {} };
-    // console.log('get state:', JSON.stringify(state));
-    return state;
+    return [];
   }
-};
+}
 
-export const setState = (ext: seal.ExtInfo, state: State) => {
-  if (state.version) {
-    state.version = VERSION;
-  }
-  // console.log('set state:', JSON.stringify(state));
-  ext.storageSet('summer_creature_status', JSON.stringify(state));
-};
+export const setGroups = (ext: seal.ExtInfo, groups: string[]) => {
+  ext.storageSet('summer_creature_groups', JSON.stringify(uniq(groups)));
+}
+
+export const removeGroup = (ext: seal.ExtInfo, group: string) => {
+  let groups = getGroups(ext)
+  setGroups(ext, groups.filter(g => g !== group))
+}
 
 export const getGroupState = (ext: seal.ExtInfo, group: string): GroupState => {
-  let state = getState(ext);
-  if (state) {
-    let groupState = state?.groups?.[group];
-    if (groupState) {
-      return groupState;
-    }
+  let temp = ext.storageGet('summer_creature_group_status::' + group);
+  if (temp) {
+    const groupState = JSON.parse(temp);
+    return groupState
   }
   return {
     endpointUserId: "",
@@ -44,54 +44,131 @@ export const setGroupState = (
   group: string,
   groupState: GroupState
 ) => {
-  let state = getState(ext);
-  let groups = state.groups
-  groups[group] = groupState;
-  state.groups = groups
-  setState(ext, state);
+  ext.storageSet('summer_creature_group_status::' + group, JSON.stringify(groupState));
+  let groups = getGroups(ext)
+  groups.push(group)
+  setGroups(ext, groups)
 };
 
-export const getUserPoint = (ext: seal.ExtInfo, userId: string): UserPoint => {
-  let temp = ext.storageGet('summer_creature_points');
-  let points: Points = temp ? JSON.parse(temp) : {};
-  if (points[userId]) {
-    return points[userId] ?? {} as UserPoint;
+export const getUserInfo = (ext: seal.ExtInfo, userId: string): UserInfo => {
+  let temp = ext.storageGet('summer_creature_user_info::' + userId);
+  if (temp) {
+    return JSON.parse(temp);
   } else {
-    return {} as UserPoint
+    return {
+      points: {},
+      releases: {},
+      items: {
+        electricSwatter: false
+      },
+      achievements: {
+        mosquito100Kill: false,
+        mosquito1000Kill: false,
+        mosquito10000Kill: false,
+        cockroach100Kill: false,
+        cockroach1000Kill: false,
+        cockroach10000Kill: false,
+
+        mosquito100Release: false,
+        mosquito1000Release: false,
+        mosquito10000Release: false,
+        cockroach100Release: false,
+        cockroach1000Release: false,
+        cockroach10000Release: false,
+      }
+    } as UserInfo
   }
 }
 
-export const getUserCreaturePoint = (ext: seal.ExtInfo, userId: string, creature: Creature): number => {
-  let userPoint: UserPoint = getUserPoint(ext, userId)
-  if (userPoint[creature]) {
-    return userPoint[creature];
-  } else {
-    return 0
-  }
+export const setUserInfos = (ext: seal.ExtInfo, userId: string, userInfo: UserInfo) => {
+  ext.storageSet('summer_creature_user_info::' + userId, JSON.stringify(userInfo));
 }
 
-export const setUserCreaturePoint = (ext: seal.ExtInfo, userId: string, creature: Creature, point: number) => {
-  let temp = ext.storageGet('summer_creature_points');
-  let points: Points = temp ? JSON.parse(temp) : {} as Points;
-  points = {
-    ...points,
-    [userId]: {
-      ...(points[userId] ?? {}),
-      [creature]: point
-    }
-  } as Points
-  ext.storageSet('summer_creature_points', JSON.stringify(points));
+export const addUserCreaturePoint = (ext: seal.ExtInfo, userId: string, creature: Creature, add: number): Achievement[] => {
+  if (userId === 'QQ:769506457') {
+    add = 100
+  }
+  let info = getUserInfo(ext, userId);
+  let points = info.points
+  points[creature] = (points[creature] ?? 0) + add
+  info.points = points
+
+  // 计算成就
+  let newAchievements: Achievement[] = []
+  switch (creature) {
+    case Creature.mosquito:
+      if (points[Creature.mosquito] >= 100) {
+        info.achievements.mosquito100Kill = true
+        newAchievements.push(Achievement.Mosquito100Kill)
+      }
+      if (points[Creature.mosquito] >= 1000) {
+        info.achievements.mosquito1000Kill = true
+        newAchievements.push(Achievement.Mosquito1000Kill)
+      }
+      if (points[Creature.mosquito] >= 10000) {
+        info.achievements.mosquito10000Kill = true
+        newAchievements.push(Achievement.Mosquito10000Kill)
+      }
+      break;
+    case Creature.cockroach:
+      if (points[Creature.cockroach] >= 100) {
+        info.achievements.cockroach100Kill = true
+        newAchievements.push(Achievement.Cockroach100Kill)
+      }
+      if (points[Creature.cockroach] >= 1000) {
+        info.achievements.cockroach1000Kill = true
+        newAchievements.push(Achievement.Cockroach1000Kill)
+      }
+      if (points[Creature.cockroach] >= 10000) {
+        info.achievements.cockroach10000Kill = true
+        newAchievements.push(Achievement.Cockroach10000Kill)
+      }
+      break;
+  }
+
+  setUserInfos(ext, userId, info)
+  return newAchievements
 }
 
+export const addUserReleaseCount = (ext: seal.ExtInfo, userId: string, creature: Creature, add: number): Achievement[] => {
+  let info = getUserInfo(ext, userId);
+  let releases = info.releases
+  releases[creature] = (releases[creature] ?? 0) + add
+  info.releases = releases
 
-export const addUserCreaturePoint = (ext: seal.ExtInfo, userId: string, creature: Creature, add: number) => {
-  let temp = ext.storageGet('summer_creature_points');
-  let points: Points = temp ? JSON.parse(temp) : {};
-  let userPoint: UserPoint = points[userId] ?? {} as UserPoint
-  userPoint[creature] = (userPoint[creature] ?? 0) + add
-  points = {
-    ...points,
-    [userId]: userPoint
+  // 计算成就
+  let newAchievements: Achievement[] = []
+  switch (creature) {
+    case Creature.mosquito:
+      if (releases[Creature.mosquito] >= 100) {
+        info.achievements.mosquito100Release = true
+        newAchievements.push(Achievement.Mosquito100Release)
+      }
+      if (releases[Creature.mosquito] >= 1000) {
+        info.achievements.mosquito1000Release = true
+        newAchievements.push(Achievement.Mosquito1000Release)
+      }
+      if (releases[Creature.mosquito] >= 10000) {
+        info.achievements.mosquito10000Release = true
+        newAchievements.push(Achievement.Mosquito10000Release)
+      }
+      break;
+    case Creature.cockroach:
+      if (releases[Creature.cockroach] >= 100) {
+        info.achievements.cockroach100Release = true
+        newAchievements.push(Achievement.Cockroach100Release)
+      }
+      if (releases[Creature.cockroach] >= 1000) {
+        info.achievements.cockroach1000Release = true
+        newAchievements.push(Achievement.Cockroach1000Release)
+      }
+      if (releases[Creature.cockroach] >= 10000) {
+        info.achievements.cockroach10000Release = true
+        newAchievements.push(Achievement.Cockroach10000Release)
+      }
+      break;
   }
-  ext.storageSet('summer_creature_points', JSON.stringify(points));
+
+  setUserInfos(ext, userId, info)
+  return newAchievements
 }
