@@ -206,10 +206,10 @@ declare namespace seal {
 
     newCmdItemInfo(): CmdItemInfo;
 
-    /** 注册整数配置项 */
-    registerIntConfig(ext: ExtInfo, key: string, value: number): void;
-    /** 读取整数配置项 */
-    getIntConfig(ext: ExtInfo, key: string): number;
+    /** 注册浮点数配置项 */
+    registerFloatConfig(ext: ExtInfo, key: string, value: number): void;
+    /** 读取浮点数配置项 */
+    getFloatConfig(ext: ExtInfo, key: string): number;
   };
 
   interface CocRuleInfo {

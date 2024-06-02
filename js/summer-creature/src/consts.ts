@@ -2,7 +2,7 @@ import { Creature } from "./types";
 import { times } from "lodash-es";
 import { Consumable } from "./items";
 
-export const VERSION = '1.1.0'
+export const VERSION = '1.2.0'
 
 export const MAX_CREATURE_COUNT = 16
 
@@ -12,8 +12,8 @@ export const DefaultCreatureIntervals = {
 }
 
 export const SuccessfulAttackProbabilities = {
-  [Creature.mosquito]: 50,
-  [Creature.cockroach]: 30,
+  [Creature.mosquito]: 60,
+  [Creature.cockroach]: 40,
 }
 
 export const DefenseFailDescList = {

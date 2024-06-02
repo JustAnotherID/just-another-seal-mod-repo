@@ -18,12 +18,16 @@ export const getCreatures = (creature: Creature, count: number): string => {
 
 export const getAchievementDesc = (achievement: Achievement): string => {
   switch (achievement) {
+    case Achievement.Mosquito10Kill:
+      return "十蚊斩";
     case Achievement.Mosquito100Kill:
       return "百蚊斩";
     case Achievement.Mosquito1000Kill:
       return "千蚊斩";
     case Achievement.Mosquito10000Kill:
       return "万蚊斩";
+    case Achievement.Cockroach10Kill:
+      return "十蟑斩";
     case Achievement.Cockroach100Kill:
       return "百蟑斩";
     case Achievement.Cockroach1000Kill:
@@ -62,13 +66,13 @@ export const getDefenseFailDesc = (creature: Creature): string => {
   return descList[random(0, descList.length - 1)]
 }
 
-export const getItemDesc = (item: Item) => {
+export const getItemDesc = (item: Item): [string, string] => {
   switch (item) {
     case Equipment.electricSwatter:
-      return '电蚊拍';
+      return ['电蚊拍', '对蚊子的命中率和杀伤提升了'];
     case Consumable.mosquitoRepellentIncense:
-      return '蚊香';
+      return ['蚊香', '可以点蚊香了'];
     case Consumable.cockroachTrap:
-      return '蟑螂屋';
+      return ['蟑螂屋', '可以放蟑螂屋了'];
   }
 }

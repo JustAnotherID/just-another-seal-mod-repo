@@ -57,9 +57,11 @@ export interface UserItem {
 }
 
 export enum Achievement {
+  Mosquito10Kill = 'mosquito10Kill',
   Mosquito100Kill = 'mosquito100Kill',
   Mosquito1000Kill = 'mosquito1000Kill',
   Mosquito10000Kill = 'mosquito10000Kill',
+  Cockroach10Kill = 'cockroach10Kill',
   Cockroach100Kill = 'cockroach100Kill',
   Cockroach1000Kill = 'cockroach1000Kill',
   Cockroach10000Kill = 'cockroach10000Kill',

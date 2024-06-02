@@ -74,6 +74,7 @@ function main() {
         seal.replyToSender(ctx, msg, startHandle(ext, ctx.endPoint.userId, msg.groupId, msg.guildId, msg.sender.userId));
         return seal.ext.newCmdExecuteResult(true);
       case '停止':
+      case '关闭':
         seal.replyToSender(ctx, msg, stopHandle(ext, msg.groupId));
         return seal.ext.newCmdExecuteResult(true);
       case '释放':
@@ -120,8 +121,8 @@ function main() {
     }
   }
 
-  seal.ext.registerIntConfig(ext, "蚊子活动间隔/min", DefaultCreatureIntervals[Creature.mosquito] / 60);
-  seal.ext.registerIntConfig(ext, "蟑螂活动间隔/min", DefaultCreatureIntervals[Creature.cockroach] / 60);
+  seal.ext.registerFloatConfig(ext, "蚊子活动间隔/min（会四舍五入为整数）", DefaultCreatureIntervals[Creature.mosquito] / 60);
+  seal.ext.registerFloatConfig(ext, "蟑螂活动间隔/min（会四舍五入为整数）", DefaultCreatureIntervals[Creature.cockroach] / 60);
 
   startTimer(ext)
 }

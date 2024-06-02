@@ -22,6 +22,11 @@
 
 ## 更新记录
 
+### `1.2.0`
+
+- feat: 增加电蚊拍
+- fix: 配置活动间隔时间使用的注册函数调整为 `registerFloatConfig`（`registerIntConfig` 在 1.4.5 海豹中有 bug）
+
 ### `1.1.0`
 
 - 增加蚊香和蟑螂屋
