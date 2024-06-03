@@ -9,7 +9,7 @@ import {
 } from './handle';
 import { DefaultCreatureIntervals, VERSION } from "./consts";
 import { Action, Creature } from "./types";
-import { getCreature } from "./utils";
+import { getCreature, isInstalled } from "./utils";
 import { Consumable } from "./items";
 
 // @ts-ignore
@@ -106,18 +106,26 @@ function main() {
 
   ext.onNotCommandReceived = (ctx, msg) => {
     let message = msg.message.trim();
-    let result: string | undefined
-    if (message === '#拍' || message === '#拍死') {
-      result = defenseHandle(ext, msg.groupId, msg.sender.userId, Action.beat);
-    } else if (message === '#踩' || message === '#踩死') {
-      result = defenseHandle(ext, msg.groupId, msg.sender.userId, Action.stepOn);
-    } else if (message === '#点蚊香' || message === '#放蚊香') {
-      result = useConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.mosquitoRepellentIncense);
-    } else if (message === '#放蟑螂屋') {
-      result = useConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.cockroachTrap);
-    }
-    if (result) {
-      seal.replyToSender(ctx, msg, result);
+    if (isInstalled(ext, msg.groupId)) {
+      let emptyReply = false
+      let result: string | undefined
+      if (message === '#拍' || message === '#拍死') {
+        result = defenseHandle(ext, msg.groupId, msg.sender.userId, Action.beat);
+        emptyReply = true
+      } else if (message === '#踩' || message === '#踩死') {
+        result = defenseHandle(ext, msg.groupId, msg.sender.userId, Action.stepOn);
+        emptyReply = true
+      } else if (message === '#踩' || message === '#踩死') {
+      } else if (message === '#点蚊香' || message === '#放蚊香') {
+        result = useConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.mosquitoRepellentIncense);
+      } else if (message === '#放蟑螂屋') {
+        result = useConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.cockroachTrap);
+      }
+      if (result) {
+        seal.replyToSender(ctx, msg, result);
+      } else if (emptyReply) {
+        seal.replyToSender(ctx, msg, '对着空气输出了一番呢……')
+      }
     }
   }
 

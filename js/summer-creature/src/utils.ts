@@ -2,6 +2,12 @@ import { Achievement, Action, Creature, GroupState } from "./types";
 import { random, times } from "lodash-es";
 import { DefenseFailDescList } from "./consts";
 import { Consumable, Equipment, Item } from "./items";
+import { getGroupState } from "./store";
+
+export const isInstalled = (ext: seal.ExtInfo, groupId: string): boolean => {
+  let state = getGroupState(ext, groupId);
+  return state.installed
+}
 
 export const getCreature = (creature: Creature, text: boolean = false): string => {
   switch (creature) {
