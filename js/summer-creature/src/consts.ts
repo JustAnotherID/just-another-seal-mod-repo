@@ -2,7 +2,7 @@ import { Creature } from "./types";
 import { times } from "lodash-es";
 import { Consumable } from "./items";
 
-export const VERSION = '1.2.1'
+export const VERSION = '1.3.0-alpha'
 
 export const MAX_CREATURE_COUNT = 16
 
