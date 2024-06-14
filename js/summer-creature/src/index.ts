@@ -11,24 +11,15 @@ import { DefaultCreatureIntervals, VERSION } from "./consts";
 import { Action, Creature } from "./types";
 import { getCreature, isInstalled } from "./utils";
 import { Consumable } from "./items";
+import { parseCronExpression } from "cron-schedule";
+import {
+  IntervalBasedCronScheduler
+} from "cron-schedule/schedulers/interval-based.js";
 
-// @ts-ignore
-let timer: number = undefined
+const scheduler = new IntervalBasedCronScheduler(10 * 1000)
 
-const startTimer = (ext: seal.ExtInfo) => {
-  if (timer === undefined) {
-    timer = setInterval(() => {
-      timerAttackHandle(ext)
-    }, 1000 * 30)
-  }
-}
-
-// @ts-ignore
-const stopTimer = () => {
-  if (timer != undefined) {
-    clearInterval(timer)
-    timer = undefined
-  }
+const registerTask = (cron: string, task: () => void) => {
+  scheduler.registerTask(parseCronExpression(cron), task)
 }
 
 const helpDesc = `\
@@ -132,7 +123,9 @@ function main() {
   seal.ext.registerFloatConfig(ext, "蚊子活动间隔/min（会四舍五入为整数）", DefaultCreatureIntervals[Creature.mosquito] / 60);
   seal.ext.registerFloatConfig(ext, "蟑螂活动间隔/min（会四舍五入为整数）", DefaultCreatureIntervals[Creature.cockroach] / 60);
 
-  startTimer(ext)
+  registerTask('*/30 * * * * *', () => {
+    timerAttackHandle(ext)
+  })
 }
 
 main();

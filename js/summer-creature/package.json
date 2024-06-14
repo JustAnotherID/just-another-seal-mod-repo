@@ -18,14 +18,14 @@
     "node": ">=10"
   },
   "dependencies": {
+    "cron-schedule": "^5.0.1",
     "dayjs": "^1.11.11",
     "lodash-es": "^4.17.21"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.12",
-    "@types/pako": "^2.0.3",
     "cross-env": "^7.0.3",
-    "esbuild": "^0.21.4",
+    "esbuild": "^0.21.5",
     "fs-extra": "^11.2.0",
     "source-map-support": "^0.5.21"
   },

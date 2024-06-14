@@ -1165,8 +1165,8 @@
   var createRound_default = createRound;
 
   // node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_Set.js
-  var Set = getNative_default(root_default, "Set");
-  var Set_default = Set;
+  var Set2 = getNative_default(root_default, "Set");
+  var Set_default = Set2;
 
   // node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_setCacheAdd.js
   var HASH_UNDEFINED3 = "__lodash_hash_undefined__";
@@ -2019,14 +2019,581 @@ ${result}`;
     return `成功在本群放置${consumableDesc}！`;
   };
 
-  // src/index.ts
-  var timer = void 0;
-  var startTimer = (ext) => {
-    if (timer === void 0) {
-      timer = setInterval(() => {
-        timerAttackHandle(ext);
-      }, 1e3 * 30);
+  // node_modules/.pnpm/cron-schedule@5.0.1/node_modules/cron-schedule/dist/utils.js
+  function extractDateElements(date) {
+    return {
+      second: date.getSeconds(),
+      minute: date.getMinutes(),
+      hour: date.getHours(),
+      day: date.getDate(),
+      month: date.getMonth(),
+      weekday: date.getDay(),
+      year: date.getFullYear()
+    };
+  }
+  function getDaysInMonth(year, month) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+  function getDaysBetweenWeekdays(weekday1, weekday2) {
+    if (weekday1 <= weekday2) {
+      return weekday2 - weekday1;
     }
+    return 6 - weekday1 + weekday2 + 1;
+  }
+  function wrapFunction(fn, errorHandler) {
+    return () => {
+      try {
+        const res = fn();
+        if (res instanceof Promise) {
+          res.catch((err) => {
+            if (errorHandler) {
+              errorHandler(err);
+            }
+          });
+        }
+      } catch (err) {
+        if (errorHandler) {
+          errorHandler(err);
+        }
+      }
+    };
+  }
+
+  // node_modules/.pnpm/cron-schedule@5.0.1/node_modules/cron-schedule/dist/cron.js
+  var Cron = class {
+    constructor({ seconds, minutes, hours, days, months, weekdays }) {
+      if (!seconds || seconds.size === 0)
+        throw new Error("There must be at least one allowed second.");
+      if (!minutes || minutes.size === 0)
+        throw new Error("There must be at least one allowed minute.");
+      if (!hours || hours.size === 0)
+        throw new Error("There must be at least one allowed hour.");
+      if (!months || months.size === 0)
+        throw new Error("There must be at least one allowed month.");
+      if ((!weekdays || weekdays.size === 0) && (!days || days.size === 0))
+        throw new Error("There must be at least one allowed day or weekday.");
+      this.seconds = Array.from(seconds).sort((a, b) => a - b);
+      this.minutes = Array.from(minutes).sort((a, b) => a - b);
+      this.hours = Array.from(hours).sort((a, b) => a - b);
+      this.days = Array.from(days).sort((a, b) => a - b);
+      this.months = Array.from(months).sort((a, b) => a - b);
+      this.weekdays = Array.from(weekdays).sort((a, b) => a - b);
+      const validateData = (name, data, constraint) => {
+        if (data.some((x) => typeof x !== "number" || x % 1 !== 0 || x < constraint.min || x > constraint.max)) {
+          throw new Error(`${name} must only consist of integers which are within the range of ${constraint.min} and ${constraint.max}`);
+        }
+      };
+      validateData("seconds", this.seconds, { min: 0, max: 59 });
+      validateData("minutes", this.minutes, { min: 0, max: 59 });
+      validateData("hours", this.hours, { min: 0, max: 23 });
+      validateData("days", this.days, { min: 1, max: 31 });
+      validateData("months", this.months, { min: 0, max: 11 });
+      validateData("weekdays", this.weekdays, { min: 0, max: 6 });
+      this.reversed = {
+        seconds: this.seconds.map((x) => x).reverse(),
+        minutes: this.minutes.map((x) => x).reverse(),
+        hours: this.hours.map((x) => x).reverse(),
+        days: this.days.map((x) => x).reverse(),
+        months: this.months.map((x) => x).reverse(),
+        weekdays: this.weekdays.map((x) => x).reverse()
+      };
+    }
+    /**
+     * Find the next or previous hour, starting from the given start hour that matches the hour constraint.
+     * startHour itself might also be allowed.
+     */
+    findAllowedHour(dir, startHour) {
+      return dir === "next" ? this.hours.find((x) => x >= startHour) : this.reversed.hours.find((x) => x <= startHour);
+    }
+    /**
+     * Find the next or previous minute, starting from the given start minute that matches the minute constraint.
+     * startMinute itself might also be allowed.
+     */
+    findAllowedMinute(dir, startMinute) {
+      return dir === "next" ? this.minutes.find((x) => x >= startMinute) : this.reversed.minutes.find((x) => x <= startMinute);
+    }
+    /**
+     * Find the next or previous second, starting from the given start second that matches the second constraint.
+     * startSecond itself IS NOT allowed.
+     */
+    findAllowedSecond(dir, startSecond) {
+      return dir === "next" ? this.seconds.find((x) => x > startSecond) : this.reversed.seconds.find((x) => x < startSecond);
+    }
+    /**
+     * Find the next or previous time, starting from the given start time that matches the hour, minute
+     * and second constraints. startTime itself might also be allowed.
+     */
+    findAllowedTime(dir, startTime) {
+      let hour = this.findAllowedHour(dir, startTime.hour);
+      if (hour !== void 0) {
+        if (hour === startTime.hour) {
+          let minute = this.findAllowedMinute(dir, startTime.minute);
+          if (minute !== void 0) {
+            if (minute === startTime.minute) {
+              const second = this.findAllowedSecond(dir, startTime.second);
+              if (second !== void 0) {
+                return { hour, minute, second };
+              }
+              minute = this.findAllowedMinute(dir, dir === "next" ? startTime.minute + 1 : startTime.minute - 1);
+              if (minute !== void 0) {
+                return {
+                  hour,
+                  minute,
+                  second: dir === "next" ? this.seconds[0] : this.reversed.seconds[0]
+                };
+              }
+            } else {
+              return {
+                hour,
+                minute,
+                second: dir === "next" ? this.seconds[0] : this.reversed.seconds[0]
+              };
+            }
+          }
+          hour = this.findAllowedHour(dir, dir === "next" ? startTime.hour + 1 : startTime.hour - 1);
+          if (hour !== void 0) {
+            return {
+              hour,
+              minute: dir === "next" ? this.minutes[0] : this.reversed.minutes[0],
+              second: dir === "next" ? this.seconds[0] : this.reversed.seconds[0]
+            };
+          }
+        } else {
+          return {
+            hour,
+            minute: dir === "next" ? this.minutes[0] : this.reversed.minutes[0],
+            second: dir === "next" ? this.seconds[0] : this.reversed.seconds[0]
+          };
+        }
+      }
+      return void 0;
+    }
+    /**
+     * Find the next or previous day in the given month, starting from the given startDay
+     * that matches either the day or the weekday constraint. startDay itself might also be allowed.
+     */
+    findAllowedDayInMonth(dir, year, month, startDay) {
+      var _a, _b;
+      if (startDay < 1)
+        throw new Error("startDay must not be smaller than 1.");
+      const daysInMonth = getDaysInMonth(year, month);
+      const daysRestricted = this.days.length !== 31;
+      const weekdaysRestricted = this.weekdays.length !== 7;
+      if (!daysRestricted && !weekdaysRestricted) {
+        if (startDay > daysInMonth) {
+          return dir === "next" ? void 0 : daysInMonth;
+        }
+        return startDay;
+      }
+      let allowedDayByDays;
+      if (daysRestricted) {
+        allowedDayByDays = dir === "next" ? this.days.find((x) => x >= startDay) : this.reversed.days.find((x) => x <= startDay);
+        if (allowedDayByDays !== void 0 && allowedDayByDays > daysInMonth) {
+          allowedDayByDays = void 0;
+        }
+      }
+      let allowedDayByWeekdays;
+      if (weekdaysRestricted) {
+        const startWeekday = new Date(year, month, startDay).getDay();
+        const nearestAllowedWeekday = dir === "next" ? (_a = this.weekdays.find((x) => x >= startWeekday)) !== null && _a !== void 0 ? _a : this.weekdays[0] : (_b = this.reversed.weekdays.find((x) => x <= startWeekday)) !== null && _b !== void 0 ? _b : this.reversed.weekdays[0];
+        if (nearestAllowedWeekday !== void 0) {
+          const daysBetweenWeekdays = dir === "next" ? getDaysBetweenWeekdays(startWeekday, nearestAllowedWeekday) : getDaysBetweenWeekdays(nearestAllowedWeekday, startWeekday);
+          allowedDayByWeekdays = dir === "next" ? startDay + daysBetweenWeekdays : startDay - daysBetweenWeekdays;
+          if (allowedDayByWeekdays > daysInMonth || allowedDayByWeekdays < 1) {
+            allowedDayByWeekdays = void 0;
+          }
+        }
+      }
+      if (allowedDayByDays !== void 0 && allowedDayByWeekdays !== void 0) {
+        return dir === "next" ? Math.min(allowedDayByDays, allowedDayByWeekdays) : Math.max(allowedDayByDays, allowedDayByWeekdays);
+      }
+      if (allowedDayByDays !== void 0) {
+        return allowedDayByDays;
+      }
+      if (allowedDayByWeekdays !== void 0) {
+        return allowedDayByWeekdays;
+      }
+      return void 0;
+    }
+    /** Gets the next date starting from the given start date or now. */
+    getNextDate(startDate = /* @__PURE__ */ new Date()) {
+      const startDateElements = extractDateElements(startDate);
+      let minYear = startDateElements.year;
+      let startIndexMonth = this.months.findIndex((x) => x >= startDateElements.month);
+      if (startIndexMonth === -1) {
+        startIndexMonth = 0;
+        minYear++;
+      }
+      const maxIterations = this.months.length * 5;
+      for (let i = 0; i < maxIterations; i++) {
+        const year = minYear + Math.floor((startIndexMonth + i) / this.months.length);
+        const month = this.months[(startIndexMonth + i) % this.months.length];
+        const isStartMonth = year === startDateElements.year && month === startDateElements.month;
+        let day = this.findAllowedDayInMonth("next", year, month, isStartMonth ? startDateElements.day : 1);
+        let isStartDay = isStartMonth && day === startDateElements.day;
+        if (day !== void 0 && isStartDay) {
+          const nextTime = this.findAllowedTime("next", startDateElements);
+          if (nextTime !== void 0) {
+            return new Date(year, month, day, nextTime.hour, nextTime.minute, nextTime.second);
+          }
+          day = this.findAllowedDayInMonth("next", year, month, day + 1);
+          isStartDay = false;
+        }
+        if (day !== void 0 && !isStartDay) {
+          return new Date(year, month, day, this.hours[0], this.minutes[0], this.seconds[0]);
+        }
+      }
+      throw new Error("No valid next date was found.");
+    }
+    /** Gets the specified amount of future dates starting from the given start date or now. */
+    getNextDates(amount, startDate) {
+      const dates = [];
+      let nextDate;
+      for (let i = 0; i < amount; i++) {
+        nextDate = this.getNextDate(nextDate !== null && nextDate !== void 0 ? nextDate : startDate);
+        dates.push(nextDate);
+      }
+      return dates;
+    }
+    /**
+     * Get an ES6 compatible iterator which iterates over the next dates starting from startDate or now.
+     * The iterator runs until the optional endDate is reached or forever.
+     */
+    *getNextDatesIterator(startDate, endDate) {
+      let nextDate;
+      while (true) {
+        nextDate = this.getNextDate(nextDate !== null && nextDate !== void 0 ? nextDate : startDate);
+        if (endDate && endDate.getTime() < nextDate.getTime()) {
+          return;
+        }
+        yield nextDate;
+      }
+    }
+    /** Gets the previous date starting from the given start date or now. */
+    getPrevDate(startDate = /* @__PURE__ */ new Date()) {
+      const startDateElements = extractDateElements(startDate);
+      let maxYear = startDateElements.year;
+      let startIndexMonth = this.reversed.months.findIndex((x) => x <= startDateElements.month);
+      if (startIndexMonth === -1) {
+        startIndexMonth = 0;
+        maxYear--;
+      }
+      const maxIterations = this.reversed.months.length * 5;
+      for (let i = 0; i < maxIterations; i++) {
+        const year = maxYear - Math.floor((startIndexMonth + i) / this.reversed.months.length);
+        const month = this.reversed.months[(startIndexMonth + i) % this.reversed.months.length];
+        const isStartMonth = year === startDateElements.year && month === startDateElements.month;
+        let day = this.findAllowedDayInMonth("prev", year, month, isStartMonth ? startDateElements.day : (
+          // Start searching from the last day of the month.
+          getDaysInMonth(year, month)
+        ));
+        let isStartDay = isStartMonth && day === startDateElements.day;
+        if (day !== void 0 && isStartDay) {
+          const prevTime = this.findAllowedTime("prev", startDateElements);
+          if (prevTime !== void 0) {
+            return new Date(year, month, day, prevTime.hour, prevTime.minute, prevTime.second);
+          }
+          if (day > 1) {
+            day = this.findAllowedDayInMonth("prev", year, month, day - 1);
+            isStartDay = false;
+          }
+        }
+        if (day !== void 0 && !isStartDay) {
+          return new Date(year, month, day, this.reversed.hours[0], this.reversed.minutes[0], this.reversed.seconds[0]);
+        }
+      }
+      throw new Error("No valid previous date was found.");
+    }
+    /** Gets the specified amount of previous dates starting from the given start date or now. */
+    getPrevDates(amount, startDate) {
+      const dates = [];
+      let prevDate;
+      for (let i = 0; i < amount; i++) {
+        prevDate = this.getPrevDate(prevDate !== null && prevDate !== void 0 ? prevDate : startDate);
+        dates.push(prevDate);
+      }
+      return dates;
+    }
+    /**
+     * Get an ES6 compatible iterator which iterates over the previous dates starting from startDate or now.
+     * The iterator runs until the optional endDate is reached or forever.
+     */
+    *getPrevDatesIterator(startDate, endDate) {
+      let prevDate;
+      while (true) {
+        prevDate = this.getPrevDate(prevDate !== null && prevDate !== void 0 ? prevDate : startDate);
+        if (endDate && endDate.getTime() > prevDate.getTime()) {
+          return;
+        }
+        yield prevDate;
+      }
+    }
+    /** Returns true when there is a cron date at the given date. */
+    matchDate(date) {
+      const { second, minute, hour, day, month, weekday } = extractDateElements(date);
+      if (this.seconds.indexOf(second) === -1 || this.minutes.indexOf(minute) === -1 || this.hours.indexOf(hour) === -1 || this.months.indexOf(month) === -1) {
+        return false;
+      }
+      if (this.days.length !== 31 && this.weekdays.length !== 7) {
+        return this.days.indexOf(day) !== -1 || this.weekdays.indexOf(weekday) !== -1;
+      }
+      return this.days.indexOf(day) !== -1 && this.weekdays.indexOf(weekday) !== -1;
+    }
+  };
+
+  // node_modules/.pnpm/cron-schedule@5.0.1/node_modules/cron-schedule/dist/cron-parser.js
+  var secondConstraint = {
+    min: 0,
+    max: 59
+  };
+  var minuteConstraint = {
+    min: 0,
+    max: 59
+  };
+  var hourConstraint = {
+    min: 0,
+    max: 23
+  };
+  var dayConstraint = {
+    min: 1,
+    max: 31
+  };
+  var monthConstraint = {
+    min: 1,
+    max: 12,
+    aliases: {
+      jan: "1",
+      feb: "2",
+      mar: "3",
+      apr: "4",
+      may: "5",
+      jun: "6",
+      jul: "7",
+      aug: "8",
+      sep: "9",
+      oct: "10",
+      nov: "11",
+      dec: "12"
+    }
+  };
+  var weekdayConstraint = {
+    min: 0,
+    max: 7,
+    aliases: {
+      mon: "1",
+      tue: "2",
+      wed: "3",
+      thu: "4",
+      fri: "5",
+      sat: "6",
+      sun: "7"
+    }
+  };
+  var timeNicknames = {
+    "@yearly": "0 0 1 1 *",
+    "@annually": "0 0 1 1 *",
+    "@monthly": "0 0 1 1 *",
+    "@weekly": "0 0 * * 0",
+    "@daily": "0 0 * * *",
+    "@hourly": "0 * * * *",
+    "@minutely": "* * * * *"
+  };
+  function parseElement(element, constraint) {
+    const result = /* @__PURE__ */ new Set();
+    if (element === "*") {
+      for (let i = constraint.min; i <= constraint.max; i = i + 1) {
+        result.add(i);
+      }
+      return result;
+    }
+    const listElements = element.split(",");
+    if (listElements.length > 1) {
+      for (const listElement of listElements) {
+        const parsedListElement = parseElement(listElement, constraint);
+        for (const x of parsedListElement) {
+          result.add(x);
+        }
+      }
+      return result;
+    }
+    const parseSingleElement = (singleElement) => {
+      var _a, _b;
+      singleElement = (_b = (_a = constraint.aliases) === null || _a === void 0 ? void 0 : _a[singleElement.toLowerCase()]) !== null && _b !== void 0 ? _b : singleElement;
+      const parsedElement = Number.parseInt(singleElement, 10);
+      if (Number.isNaN(parsedElement)) {
+        throw new Error(`Failed to parse ${element}: ${singleElement} is NaN.`);
+      }
+      if (parsedElement < constraint.min || parsedElement > constraint.max) {
+        throw new Error(`Failed to parse ${element}: ${singleElement} is outside of constraint range of ${constraint.min} - ${constraint.max}.`);
+      }
+      return parsedElement;
+    };
+    const rangeSegments = /^((([0-9a-zA-Z]+)-([0-9a-zA-Z]+))|\*)(\/([0-9]+))?$/.exec(element);
+    if (rangeSegments === null) {
+      result.add(parseSingleElement(element));
+      return result;
+    }
+    const parsedStart = rangeSegments[1] === "*" ? constraint.min : parseSingleElement(rangeSegments[3]);
+    const parsedEnd = rangeSegments[1] === "*" ? constraint.max : parseSingleElement(rangeSegments[4]);
+    if (parsedStart > parsedEnd) {
+      throw new Error(`Failed to parse ${element}: Invalid range (start: ${parsedStart}, end: ${parsedEnd}).`);
+    }
+    const step = rangeSegments[6];
+    let parsedStep = 1;
+    if (step !== void 0) {
+      parsedStep = Number.parseInt(step, 10);
+      if (Number.isNaN(parsedStep)) {
+        throw new Error(`Failed to parse step: ${step} is NaN.`);
+      }
+      if (parsedStep < 1) {
+        throw new Error(`Failed to parse step: Expected ${step} to be greater than 0.`);
+      }
+    }
+    for (let i = parsedStart; i <= parsedEnd; i = i + parsedStep) {
+      result.add(i);
+    }
+    return result;
+  }
+  function parseCronExpression(cronExpression) {
+    var _a;
+    if (typeof cronExpression !== "string") {
+      throw new TypeError("Invalid cron expression: must be of type string.");
+    }
+    cronExpression = (_a = timeNicknames[cronExpression.toLowerCase()]) !== null && _a !== void 0 ? _a : cronExpression;
+    const elements = cronExpression.split(" ");
+    if (elements.length < 5 || elements.length > 6) {
+      throw new Error("Invalid cron expression: expected 5 or 6 elements.");
+    }
+    const rawSeconds = elements.length === 6 ? elements[0] : "0";
+    const rawMinutes = elements.length === 6 ? elements[1] : elements[0];
+    const rawHours = elements.length === 6 ? elements[2] : elements[1];
+    const rawDays = elements.length === 6 ? elements[3] : elements[2];
+    const rawMonths = elements.length === 6 ? elements[4] : elements[3];
+    const rawWeekdays = elements.length === 6 ? elements[5] : elements[4];
+    return new Cron({
+      seconds: parseElement(rawSeconds, secondConstraint),
+      minutes: parseElement(rawMinutes, minuteConstraint),
+      hours: parseElement(rawHours, hourConstraint),
+      days: parseElement(rawDays, dayConstraint),
+      // months in cron are indexed by 1, but Cron expects indexes by 0, so we need to reduce all set values by one.
+      months: new Set(Array.from(parseElement(rawMonths, monthConstraint)).map((x) => x - 1)),
+      weekdays: new Set(Array.from(parseElement(rawWeekdays, weekdayConstraint)).map((x) => x % 7))
+    });
+  }
+
+  // node_modules/.pnpm/cron-schedule@5.0.1/node_modules/cron-schedule/dist/schedulers/interval-based.js
+  var __classPrivateFieldSet = function(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
+  };
+  var __classPrivateFieldGet = function(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+  };
+  var _IntervalBasedCronScheduler_interval;
+  var _IntervalBasedCronScheduler_intervalId;
+  var _IntervalBasedCronScheduler_tasks;
+  var _IntervalBasedCronScheduler_nextTaskId;
+  var IntervalBasedCronScheduler = class {
+    /**
+     * Creates and starts a new scheduler with the given interval.
+     */
+    constructor(interval) {
+      _IntervalBasedCronScheduler_interval.set(this, void 0);
+      _IntervalBasedCronScheduler_intervalId.set(this, void 0);
+      _IntervalBasedCronScheduler_tasks.set(this, []);
+      _IntervalBasedCronScheduler_nextTaskId.set(
+        this,
+        1
+        /**
+         * Creates and starts a new scheduler with the given interval.
+         */
+      );
+      __classPrivateFieldSet(this, _IntervalBasedCronScheduler_interval, interval, "f");
+      this.start();
+    }
+    /* Starts the scheduler. */
+    start() {
+      if (__classPrivateFieldGet(this, _IntervalBasedCronScheduler_intervalId, "f") !== void 0) {
+        throw new Error("Scheduler already started.");
+      }
+      __classPrivateFieldSet(this, _IntervalBasedCronScheduler_intervalId, setInterval(this.processTasks.bind(this), __classPrivateFieldGet(this, _IntervalBasedCronScheduler_interval, "f")), "f");
+    }
+    /* Ensures the scheduler is stopped. */
+    stop() {
+      if (__classPrivateFieldGet(this, _IntervalBasedCronScheduler_intervalId, "f")) {
+        clearInterval(__classPrivateFieldGet(this, _IntervalBasedCronScheduler_intervalId, "f"));
+        __classPrivateFieldSet(this, _IntervalBasedCronScheduler_intervalId, void 0, "f");
+      }
+    }
+    /* Inserts a task in the tasks array at the right position sorted by nextExecution time. */
+    insertTask(newTask) {
+      const index = __classPrivateFieldGet(this, _IntervalBasedCronScheduler_tasks, "f").findIndex((task) => task.nextExecution.getTime() > newTask.nextExecution.getTime());
+      __classPrivateFieldGet(this, _IntervalBasedCronScheduler_tasks, "f").splice(index, 0, newTask);
+    }
+    /* Registers a new task. */
+    registerTask(cron, task, opts) {
+      var _a;
+      const id = __classPrivateFieldGet(this, _IntervalBasedCronScheduler_nextTaskId, "f");
+      this.insertTask({
+        id,
+        cron,
+        nextExecution: cron.getNextDate(),
+        task,
+        isOneTimeTask: (_a = opts === null || opts === void 0 ? void 0 : opts.isOneTimeTask) !== null && _a !== void 0 ? _a : false,
+        errorHandler: opts === null || opts === void 0 ? void 0 : opts.errorHandler
+      });
+      __classPrivateFieldSet(this, _IntervalBasedCronScheduler_nextTaskId, __classPrivateFieldGet(this, _IntervalBasedCronScheduler_nextTaskId, "f") + 1, "f");
+      return id;
+    }
+    /** Unregisters a task, causing it to no longer be executed. */
+    unregisterTask(id) {
+      const taskIndex = __classPrivateFieldGet(this, _IntervalBasedCronScheduler_tasks, "f").findIndex((task) => task.id === id);
+      if (taskIndex === -1)
+        throw new Error("Task not found.");
+      __classPrivateFieldGet(this, _IntervalBasedCronScheduler_tasks, "f").splice(taskIndex, 1);
+    }
+    /* Sorts the tasks array based on the next execution time so that the next task is first in the array. */
+    sortTasks() {
+      __classPrivateFieldGet(this, _IntervalBasedCronScheduler_tasks, "f").sort((a, b) => {
+        return a.nextExecution.getTime() - b.nextExecution.getTime();
+      });
+    }
+    processTasks() {
+      const now = Date.now();
+      let taskExecuted = false;
+      let oneTimeTaskExecuted = false;
+      for (let i = 0; i < __classPrivateFieldGet(this, _IntervalBasedCronScheduler_tasks, "f").length; i += 1) {
+        const task = __classPrivateFieldGet(this, _IntervalBasedCronScheduler_tasks, "f")[i];
+        if (task.nextExecution.getTime() <= now) {
+          wrapFunction(task.task, task.errorHandler)();
+          if (!task.isOneTimeTask) {
+            taskExecuted = true;
+            task.nextExecution = task.cron.getNextDate();
+          } else {
+            oneTimeTaskExecuted = true;
+          }
+        } else {
+          break;
+        }
+      }
+      if (oneTimeTaskExecuted) {
+        __classPrivateFieldSet(this, _IntervalBasedCronScheduler_tasks, __classPrivateFieldGet(this, _IntervalBasedCronScheduler_tasks, "f").filter((task) => task.nextExecution.getTime() > now), "f");
+      }
+      if (taskExecuted) {
+        this.sortTasks();
+      }
+    }
+  };
+  _IntervalBasedCronScheduler_interval = /* @__PURE__ */ new WeakMap(), _IntervalBasedCronScheduler_intervalId = /* @__PURE__ */ new WeakMap(), _IntervalBasedCronScheduler_tasks = /* @__PURE__ */ new WeakMap(), _IntervalBasedCronScheduler_nextTaskId = /* @__PURE__ */ new WeakMap();
+
+  // src/index.ts
+  var scheduler = new IntervalBasedCronScheduler(10 * 1e3);
+  var registerTask = (cron, task) => {
+    scheduler.registerTask(parseCronExpression(cron), task);
   };
   var helpDesc = `夏季生物
 .夏季生物 // 查看当前状态
@@ -2123,7 +2690,9 @@ ${result}`;
     };
     seal.ext.registerFloatConfig(ext, "蚊子活动间隔/min（会四舍五入为整数）", DefaultCreatureIntervals["mosquito" /* mosquito */] / 60);
     seal.ext.registerFloatConfig(ext, "蟑螂活动间隔/min（会四舍五入为整数）", DefaultCreatureIntervals["cockroach" /* cockroach */] / 60);
-    startTimer(ext);
+    registerTask("*/30 * * * * *", () => {
+      timerAttackHandle(ext);
+    });
   }
   main();
 })();
