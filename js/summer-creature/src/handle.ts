@@ -4,7 +4,8 @@ import {
   addUserReleaseCount,
   getGroups,
   getGroupState,
-  getUserInfo, removeGroup,
+  getUserInfo,
+  removeGroup,
   setGroupState
 } from './store';
 import { Achievement, Action, Creature, GroupState } from "./types";
@@ -49,18 +50,20 @@ export const statusHandle = (ext: seal.ExtInfo, groupId: string, userId: string)
     }
 
     // 下次袭击
-    let forecastDesc: string = ''
-    const now = dayjs();
-    for (let creature in Creature) {
-      const c = Creature[creature];
-      const interval = CreatureIntervals[creature](ext);
-      const lastTime = state?.lastAttacked?.[c] ?? (now.unix() - interval);
-      const nextTime = lastTime + interval
-      forecastDesc += `\n${getCreature(Creature[creature])}：${dayjs.unix(nextTime).from(now)}`
-    }
-    if (forecastDesc !== '') {
-      status += '\n\n袭击预报:' + forecastDesc
-    }
+    // let forecastDesc: string = ''
+    // const now = dayjs();
+    // for (let creature in Creature) {
+    //   const c = Creature[creature];
+    //   const interval = CreatureIntervals[creature](ext);
+    //   const lastTime = state?.lastAttacked?.[c] ?? (now.unix() - interval);
+    //   const nextTime = lastTime + interval
+    //   forecastDesc += `\n${getCreature(Creature[creature])}：${dayjs.unix(nextTime).from(now)}`
+    // }
+    // if (forecastDesc !== '') {
+    //   status += '\n\n袭击预报:' + forecastDesc
+    // }
+
+    // TODO: 生物密度
 
     // 用户状态
     const userInfo = getUserInfo(ext, userId);
@@ -115,12 +118,93 @@ export const stopHandle = (ext: seal.ExtInfo, groupId: string): string => {
   return `神秘的力量让群里不再有讨厌的生物活动了……`;
 };
 
-export const manualAttackHandle = (ext: seal.ExtInfo, groupId: string, userId: string, creature: Creature): [string, number, number] => {
+const growHandle = (ext: seal.ExtInfo, groupId: string, userId: string, creature: Creature,
+                    groupState: GroupState = undefined,
+                    mode: 'auto' | 'manual' | 'other-group' = 'auto', count: number = 0): [string, number] => {
+  const now = dayjs();
+  console.log(`夏季生物繁殖：时间 ${now.format("YYYY-MM-DD HH:mm:ss")}，群 ${groupState.targetGroupId}，生物 ${getCreature(c)}，模式 ${mode}`);
+  let state = groupStatus ?? getGroupState(ext, groupId);
+  if (count === 0) {
+    if (!state.attacked?.[creature]) {
+      count = random(3, 10)
+    } else {
+      const currentCount = state.attacked[creature]
+      if (currentCount < MAX_CREATURE_COUNT) {
+        count = Math.min(random(3, 5), MAX_CREATURE_COUNT - currentCount)
+      } else {
+        count = 0
+      }
+    }
+  }
+  let achievementStr: string = ''
+  if (count > 0) {
+    state.attacked = {
+      ...state.attacked,
+      [creature]: (state.attacked?.[creature] ?? 0) + count
+    }
+    if (mode === 'manual') {
+      // 手动释放，记录
+      const newAchievements = addUserReleaseCount(ext, userId, creature, count);
+      if (newAchievements.length > 0) {
+        achievementStr = '获得成就' + newAchievements.map(it => `「${getAchievementDesc(it)}」`).join('')
+      }
+    }
+    setGroupState(ext, groupId, state)
+  }
+  return [achievementStr, count]
+}
+
+export const manualReleaseHandle = (ext: seal.ExtInfo, groupId: string, userId: string, creature: Creature): string => {
   let state = getGroupState(ext, groupId);
   if (!state.installed) {
-    return ['夏季生物还未出现！', 0, 0];
+    return '夏季生物还未出现！'
   }
-  return attackHandle(ext, groupId, userId, creature, state, 'manual');
+  let [achievement, count] = growHandle(ext, groupId, userId, creature, state, 'manual')
+  const creatureName = getCreature(creatured);
+  let result = `<${msg.sender.nickname}>成功向群里释放了 ${count} 只${creatureName}`
+  if (achievement != '') {
+    result += `\n${achievement}`
+  }
+  return result
+}
+
+export const timerGrowHandle = (ext: seal.ExtInfo) => {
+  const epMap: { [key: string]: seal.EndPointInfo } = {}
+  const eps = seal.getEndPoints()
+  for (let ep of eps) {
+    epMap[ep.userId] = ep
+  }
+
+  for (let groupId of getGroups(ext)) {
+    const groupState = getGroupState(ext, groupId)
+    if (groupState.installed) {
+      for (let creature in Creature) {
+        const c = Creature[creature];
+        growHandle(ext, groupId, '', c, groupState, 'auto')
+      }
+    }
+  }
+}
+
+/**
+ * 生物攻击群内用户
+ * @param ext
+ * @param groupId 群号
+ * @param creature 生物
+ * @param groupStatus
+ */
+const attackGroupUsers = (ext: seal.ExtInfo, groupId: string, creature: Creature, groupStatus: GroupState = undefined): string => {
+  let state = groupStatus ?? getGroupState(ext, groupId);
+  const count = state?.attacked?.[creature] ?? 0
+  if (count > 0) {
+    state.lastAttacked = { ...state.lastAttacked, [creature]: dayjs().unix() }
+    setGroupState(ext, groupId, state)
+
+    // TODO: 根据当前生物数量与群内活跃程度，挑选被攻击的用户
+    const attackedUsers = []
+
+    return getCreatures(creature, count) + '\n' + attackedUsers.map(attackedUser => `[CQ:at,qq=${attackedUser}]被${getCreature(creature, true)}袭击了`)
+  }
 }
 
 export const timerAttackHandle = (ext: seal.ExtInfo) => {
@@ -151,12 +235,12 @@ export const timerAttackHandle = (ext: seal.ExtInfo) => {
 }
 
 const autoAttackHandle = (ext: seal.ExtInfo, ep: seal.EndPointInfo, c: Creature, groupState: GroupState,
-                          mode: 'auto' | 'other-group' = 'auto', migrate: number = 0) => {
+                          mode: 'auto' | 'other-group' = 'auto') => {
   const now = dayjs();
   console.log(`夏季生物袭击：时间 ${now.format("YYYY-MM-DD HH:mm:ss")}，群 ${groupState.targetGroupId}，生物 ${getCreature(c)}，模式 ${mode}`);
-  const [result, _count, _migrate] = attackHandle(ext, groupState.targetGroupId, "", c, groupState, mode, migrate)
+  const result = attackGroupUsers(ext, groupState.targetGroupId, c, groupState);
   if (result !== '') {
-    // 发送生物活动消息
+    // 发送生物袭击消息
     const msg = seal.newMessage();
     msg.messageType = 'group'
     msg.groupId = groupState.targetGroupId
@@ -168,6 +252,9 @@ const autoAttackHandle = (ext: seal.ExtInfo, ep: seal.EndPointInfo, c: Creature,
   }
 }
 
+/**
+ * @deprecated
+ */
 const attackOtherGroup = (ext: seal.ExtInfo, creature: Creature, fromGroupId: string, migrate: number) => {
   const now = dayjs();
   console.log(`夏季生物转移：时间 ${now.format("YYYY-MM-DD HH:mm:ss")}，来源群 ${fromGroupId}，生物 ${getCreature(creature)}`);
@@ -183,11 +270,14 @@ const attackOtherGroup = (ext: seal.ExtInfo, creature: Creature, fromGroupId: st
     const groupState = getGroupState(ext, randomGroup)
     const ep = epMap[groupState.endpointUserId]
     if (ep) {
-      autoAttackHandle(ext, ep, creature, groupState, 'other-group', migrate)
+      autoAttackHandle(ext, ep, creature, groupState, 'other-group')
     }
   }
 }
 
+/**
+ * @deprecated
+ */
 export const attackHandle = (ext: seal.ExtInfo, groupId: string, userId: string, creature: Creature, groupStatus: GroupState = undefined,
                              mode: 'auto' | 'manual' | 'other-group' = 'auto', count: number = 0): [string, number, number] => {
   let state = groupStatus ?? getGroupState(ext, groupId);

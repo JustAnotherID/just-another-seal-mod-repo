@@ -2,14 +2,15 @@ import {
   timerAttackHandle,
   defenseHandle,
   startHandle,
-  manualAttackHandle,
+  manualReleaseHandle,
   statusHandle,
   stopHandle,
-  useConsumableHandle
+  useConsumableHandle,
+  timerGrowHandle
 } from './handle';
 import { DefaultCreatureIntervals, VERSION } from "./consts";
 import { Action, Creature } from "./types";
-import { getCreature, isInstalled } from "./utils";
+import { isInstalled } from "./utils";
 import { Consumable } from "./items";
 import { parseCronExpression } from "cron-schedule";
 import {
@@ -82,10 +83,7 @@ function main() {
             seal.replyToSender(ctx, msg, "当前不支持该生物");
             return seal.ext.newCmdExecuteResult(true);
         }
-        let [result, count, migrate] = manualAttackHandle(ext, msg.groupId, msg.sender.userId, creature)
-        const creatureName = getCreature(creature, true);
-        result = `<${msg.sender.nickname}>向群里释放了 ${count + migrate} 只 ${creatureName}，当前活动中的${creatureName}：\n${result}`
-        seal.replyToSender(ctx, msg, result);
+        seal.replyToSender(ctx, msg, manualReleaseHandle(ext, msg.groupId, msg.sender.userId, creature));
         return seal.ext.newCmdExecuteResult(true);
       default:
         seal.replyToSender(ctx, msg, statusHandle(ext, msg.groupId, msg.sender.userId));
@@ -123,8 +121,17 @@ function main() {
   seal.ext.registerFloatConfig(ext, "蚊子活动间隔/min（会四舍五入为整数）", DefaultCreatureIntervals[Creature.mosquito] / 60);
   seal.ext.registerFloatConfig(ext, "蟑螂活动间隔/min（会四舍五入为整数）", DefaultCreatureIntervals[Creature.cockroach] / 60);
 
+  // 每半小时所有群的生物繁殖一次
+  registerTask('* */30 * * * *', () => {
+    timerGrowHandle(ext)
+  })
+  // 检查生物袭击
   registerTask('*/30 * * * * *', () => {
     timerAttackHandle(ext)
+  })
+  // 每十分钟蚊香等工作一次
+  registerTask('* */10 * * * *', () => {
+    timerGrowHandle(ext)
   })
 }
 
