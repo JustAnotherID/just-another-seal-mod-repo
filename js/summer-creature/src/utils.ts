@@ -18,6 +18,17 @@ export const getCreature = (creature: Creature, text: boolean = false): string =
   }
 }
 
+export const getCreatureByConsumable = (consumable: Consumable): Creature => {
+  switch (consumable) {
+    case Consumable.mosquitoRepellentIncense:
+      return Creature.mosquito;
+    case Consumable.cockroachTrap:
+      return Creature.cockroach;
+    case Consumable.cockroachGelBait:
+      return Creature.cockroach;
+  }
+}
+
 export const getCreatures = (creature: Creature, count: number): string => {
   return times(count, () => getCreature(Creature[creature])).join('') ?? ''
 }

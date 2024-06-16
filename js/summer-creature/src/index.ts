@@ -110,6 +110,8 @@ function main() {
         result = setConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.mosquitoRepellentIncense);
       } else if (message === '#放蟑螂屋') {
         result = setConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.cockroachTrap);
+      } else if (message === '#放杀蟑胶饵') {
+        result = setConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.cockroachGelBait);
       }
       if (result) {
         seal.replyToSender(ctx, msg, result);

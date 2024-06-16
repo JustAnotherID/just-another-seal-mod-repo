@@ -114,6 +114,11 @@ export const addUserCreaturePoint = (ext: seal.ExtInfo, userId: string, creature
       }
       break;
     case Creature.cockroach:
+      if (points[Creature.cockroach] >= 10 && !info.achievements.cockroach10Kill) {
+        info.achievements.cockroach10Kill = true
+        newAchievements.push(Achievement.Cockroach10Kill)
+        newItems.push(Consumable.cockroachTrap)
+      }
       if (points[Creature.cockroach] >= 100 && !info.achievements.cockroach100Kill) {
         info.achievements.cockroach100Kill = true
         newAchievements.push(Achievement.Cockroach100Kill)
