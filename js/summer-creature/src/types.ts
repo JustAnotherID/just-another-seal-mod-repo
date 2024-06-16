@@ -19,6 +19,10 @@ export type GroupConsumableTime = {
   [key in Consumable]: number
 }
 
+export type GroupConsumableKill = {
+  [key in Consumable]: number
+}
+
 export interface GroupState {
   endpointUserId: string;
   targetUserId: string;
@@ -35,6 +39,7 @@ export interface GroupState {
 
   item?: GroupItem
   consumableTime?: GroupConsumableTime
+  consumableKill?: GroupConsumableTime
 }
 
 export interface State {

@@ -10,6 +10,7 @@ import {
 } from './store';
 import { Achievement, Action, Creature, GroupState } from "./types";
 import {
+  ConsumableLethality,
   ConsumableValidityPeriod,
   MAX_CREATURE_COUNT,
   SuccessfulAttackProbabilities
@@ -64,6 +65,8 @@ export const statusHandle = (ext: seal.ExtInfo, groupId: string, userId: string)
     // }
 
     // TODO: 生物密度
+
+    // TODO: 消耗品工作信息
 
     // 用户状态
     const userInfo = getUserInfo(ext, userId);
@@ -126,11 +129,11 @@ const growHandle = (ext: seal.ExtInfo, groupId: string, userId: string, creature
   let state = groupState ?? getGroupState(ext, groupId);
   if (count === 0) {
     if (!state.attacked?.[creature]) {
-      count = random(3, 10)
+      count = random(5, 10)
     } else {
       const currentCount = state.attacked[creature]
       if (currentCount < MAX_CREATURE_COUNT) {
-        count = Math.min(random(3, 5), MAX_CREATURE_COUNT - currentCount)
+        count = Math.min(random(5, 7), MAX_CREATURE_COUNT - currentCount)
       } else {
         count = 0
       }
@@ -205,6 +208,7 @@ const attackGroupUsers = (ext: seal.ExtInfo, groupId: string, creature: Creature
 
     return getCreatures(creature, count) + '\n' + attackedUsers.map(attackedUser => `[CQ:at,qq=${attackedUser}]被${getCreature(creature, true)}袭击了`)
   }
+  return ''
 }
 
 export const timerAttackHandle = (ext: seal.ExtInfo) => {
@@ -255,7 +259,7 @@ const autoAttackHandle = (ext: seal.ExtInfo, ep: seal.EndPointInfo, c: Creature,
 /**
  * @deprecated
  */
-const attackOtherGroup = (ext: seal.ExtInfo, creature: Creature, fromGroupId: string, migrate: number) => {
+const attackOtherGroup = (ext: seal.ExtInfo, creature: Creature, fromGroupId: string, _migrate: number) => {
   const now = dayjs();
   console.log(`夏季生物转移：时间 ${now.format("YYYY-MM-DD HH:mm:ss")}，来源群 ${fromGroupId}，生物 ${getCreature(creature)}`);
   const epMap: { [key: string]: seal.EndPointInfo } = {}
@@ -440,6 +444,36 @@ export const timerUseConsumableHandle = (ext: seal.ExtInfo) => {
 
 const useConsumableHandle = (ext: seal.ExtInfo, groupId: string, consumable: Consumable,
                              groupState: GroupState = undefined) => {
+  const lethality = ConsumableLethality[consumable]
+  const kill = random(lethality[0], lethality[1])
+  switch (consumable) {
+    case Consumable.mosquitoRepellentIncense:
+      consumableKillCreature(ext, groupId, Consumable.mosquitoRepellentIncense, Creature.mosquito, kill, groupState)
+      break
+    case Consumable.cockroachTrap:
+      consumableKillCreature(ext, groupId, Consumable.cockroachTrap, Creature.cockroach, kill, groupState)
+      break
+    case Consumable.cockroachGelBait:
+      consumableKillCreature(ext, groupId, Consumable.cockroachGelBait, Creature.cockroach, kill, groupState)
+      break
+  }
+}
+
+const consumableKillCreature = (ext: seal.ExtInfo, groupId: string,
+                                consumable: Consumable, creature: Creature, kill: number,
+                                groupState: GroupState = undefined) => {
+  const state = groupState ?? getGroupState(ext, groupId);
+  const current = state.consumableKill?.[creature] ?? 0
+  const actuallyKill = Math.min(kill, current)
+  state.attacked = {
+    ...state.attacked,
+    [creature]: current - actuallyKill,
+  }
+  state.consumableKill = {
+    ...state.consumableKill,
+    [consumable]: (state.consumableKill?.[consumable] ?? 0) + kill
+  }
+  setGroupState(ext, groupId, state)
 }
 
 export const setConsumableHandle = (ext: seal.ExtInfo, groupId: string, userId: string, consumable: Consumable): string | undefined => {
@@ -462,29 +496,23 @@ export const setConsumableHandle = (ext: seal.ExtInfo, groupId: string, userId: 
       if (!userInfo.achievements.mosquito100Kill) {
         return '你还没有解锁蚊香，继续拍死更多蚊子吧';
       } else {
-        state.item = {
-          ...state.item,
-          [Consumable.mosquitoRepellentIncense]: true,
-        };
-        state.consumableTime = {
-          ...state.consumableTime,
-          [Consumable.mosquitoRepellentIncense]: now.unix()
-        };
+        setConsumable(ext, groupId, Consumable.mosquitoRepellentIncense, now, state);
       }
       break;
     case Consumable.cockroachTrap:
-      // 蟑螂屋需要百蟑斩解锁
-      if (!userInfo.achievements.cockroach100Kill) {
+      // 蟑螂屋需要十蟑斩解锁
+      if (!userInfo.achievements.cockroach10Kill) {
         return '你还没有解锁蟑螂屋，继续踩死更多蟑螂吧';
       } else {
-        state.item = {
-          ...state.item,
-          [Consumable.cockroachTrap]: true,
-        };
-        state.consumableTime = {
-          ...state.consumableTime,
-          [Consumable.cockroachTrap]: now.unix()
-        };
+        setConsumable(ext, groupId, Consumable.cockroachTrap, now, state);
+      }
+      break;
+    case Consumable.cockroachGelBait:
+      // 杀蟑胶饵需要百蟑斩解锁
+      if (!userInfo.achievements.cockroach100Kill) {
+        return '你还没有解锁杀蟑胶饵，继续踩死更多蟑螂吧';
+      } else {
+        setConsumable(ext, groupId, Consumable.cockroachGelBait, now, state);
       }
       break;
     default:
@@ -493,4 +521,22 @@ export const setConsumableHandle = (ext: seal.ExtInfo, groupId: string, userId: 
 
   setGroupState(ext, groupId, state);
   return `成功在本群放置${consumableDesc}！`
+}
+
+const setConsumable = (ext: seal.ExtInfo, groupId: string, consumable: Consumable, time: dayjs.Dayjs,
+                       groupState: GroupState = undefined) => {
+  const state = groupState ?? getGroupState(ext, groupId);
+  state.item = {
+    ...state.item,
+    [consumable]: true,
+  };
+  state.consumableTime = {
+    ...state.consumableTime,
+    [consumable]: time.unix()
+  };
+  state.consumableKill = {
+    ...state.consumableKill,
+    [consumable]: 0
+  }
+  setGroupState(ext, groupId, state);
 }

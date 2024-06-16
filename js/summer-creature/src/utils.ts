@@ -80,5 +80,7 @@ export const getItemDesc = (item: Item): [string, string] => {
       return ['蚊香', '可以点蚊香了'];
     case Consumable.cockroachTrap:
       return ['蟑螂屋', '可以放蟑螂屋了'];
+    case Consumable.cockroachGelBait:
+      return ['杀蟑胶饵', '可以使用杀蟑胶饵了'];
   }
 }

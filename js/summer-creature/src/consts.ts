@@ -36,4 +36,14 @@ export const DefenseFailDescList = {
 export const ConsumableValidityPeriod = {
   [Consumable.mosquitoRepellentIncense]: 60 * 60 * 8,
   [Consumable.cockroachTrap]: 60 * 60 * 8,
+  [Consumable.cockroachGelBait]: 60 * 60 * 8,
+}
+
+/**
+ * 消耗品杀伤力（每 10 分钟杀伤）
+ */
+export const ConsumableLethality = {
+  [Consumable.mosquitoRepellentIncense]: [3, 7],
+  [Consumable.cockroachTrap]: [1, 2],
+  [Consumable.cockroachGelBait]: [5, 7],
 }

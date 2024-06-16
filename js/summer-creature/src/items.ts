@@ -7,4 +7,5 @@ export enum Equipment {
 export enum Consumable {
   mosquitoRepellentIncense = 'mosquitoRepellentIncense', // 蚊香
   cockroachTrap = 'cockroachTrap', // 蟑螂屋
+  cockroachGelBait = 'cockroachGelBait', // 杀蟑胶饵
 }
