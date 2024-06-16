@@ -2,6 +2,7 @@
   "name": "summer-creature",
   "version": "1.3.0-alpha",
   "description": "海豹骰插件，为群里提供夏季生物活动。",
+  "type": "commonjs",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
   "repository": "https://github.com/JustAnotherID/just-another-seal-mod-repo/js/summer-creature",

@@ -5,8 +5,9 @@ import {
   manualReleaseHandle,
   statusHandle,
   stopHandle,
-  useConsumableHandle,
-  timerGrowHandle
+  setConsumableHandle,
+  timerGrowHandle,
+  timerUseConsumableHandle
 } from './handle';
 import { DefaultCreatureIntervals, VERSION } from "./consts";
 import { Action, Creature } from "./types";
@@ -83,7 +84,7 @@ function main() {
             seal.replyToSender(ctx, msg, "当前不支持该生物");
             return seal.ext.newCmdExecuteResult(true);
         }
-        seal.replyToSender(ctx, msg, manualReleaseHandle(ext, msg.groupId, msg.sender.userId, creature));
+        seal.replyToSender(ctx, msg, manualReleaseHandle(ext, msg.groupId, msg.sender.userId, msg.sender.nickname, creature));
         return seal.ext.newCmdExecuteResult(true);
       default:
         seal.replyToSender(ctx, msg, statusHandle(ext, msg.groupId, msg.sender.userId));
@@ -106,9 +107,9 @@ function main() {
         emptyReply = true
       } else if (message === '#踩' || message === '#踩死') {
       } else if (message === '#点蚊香' || message === '#放蚊香') {
-        result = useConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.mosquitoRepellentIncense);
+        result = setConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.mosquitoRepellentIncense);
       } else if (message === '#放蟑螂屋') {
-        result = useConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.cockroachTrap);
+        result = setConsumableHandle(ext, msg.groupId, msg.sender.userId, Consumable.cockroachTrap);
       }
       if (result) {
         seal.replyToSender(ctx, msg, result);
@@ -131,7 +132,7 @@ function main() {
   })
   // 每十分钟蚊香等工作一次
   registerTask('* */10 * * * *', () => {
-    timerGrowHandle(ext)
+    timerUseConsumableHandle(ext)
   })
 }
 

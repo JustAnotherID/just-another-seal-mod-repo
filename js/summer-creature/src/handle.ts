@@ -122,8 +122,8 @@ const growHandle = (ext: seal.ExtInfo, groupId: string, userId: string, creature
                     groupState: GroupState = undefined,
                     mode: 'auto' | 'manual' | 'other-group' = 'auto', count: number = 0): [string, number] => {
   const now = dayjs();
-  console.log(`夏季生物繁殖：时间 ${now.format("YYYY-MM-DD HH:mm:ss")}，群 ${groupState.targetGroupId}，生物 ${getCreature(c)}，模式 ${mode}`);
-  let state = groupStatus ?? getGroupState(ext, groupId);
+  console.log(`夏季生物繁殖：时间 ${now.format("YYYY-MM-DD HH:mm:ss")}，群 ${groupState.targetGroupId}，生物 ${getCreature(creature)}，模式 ${mode}`);
+  let state = groupState ?? getGroupState(ext, groupId);
   if (count === 0) {
     if (!state.attacked?.[creature]) {
       count = random(3, 10)
@@ -154,14 +154,14 @@ const growHandle = (ext: seal.ExtInfo, groupId: string, userId: string, creature
   return [achievementStr, count]
 }
 
-export const manualReleaseHandle = (ext: seal.ExtInfo, groupId: string, userId: string, creature: Creature): string => {
+export const manualReleaseHandle = (ext: seal.ExtInfo, groupId: string, userId: string, userName: string, creature: Creature): string => {
   let state = getGroupState(ext, groupId);
   if (!state.installed) {
     return '夏季生物还未出现！'
   }
   let [achievement, count] = growHandle(ext, groupId, userId, creature, state, 'manual')
-  const creatureName = getCreature(creatured);
-  let result = `<${msg.sender.nickname}>成功向群里释放了 ${count} 只${creatureName}`
+  const creatureName = getCreature(creature);
+  let result = `<${userName}>成功向群里释放了 ${count} 只${creatureName}`
   if (achievement != '') {
     result += `\n${achievement}`
   }
@@ -412,7 +412,37 @@ export const defenseHandle = (ext: seal.ExtInfo, groupId: string, userId: string
   return result
 }
 
-export const useConsumableHandle = (ext: seal.ExtInfo, groupId: string, userId: string, consumable: Consumable): string | undefined => {
+export const timerUseConsumableHandle = (ext: seal.ExtInfo) => {
+  const epMap: { [key: string]: seal.EndPointInfo } = {}
+  const eps = seal.getEndPoints()
+  for (let ep of eps) {
+    epMap[ep.userId] = ep
+  }
+
+  const now = dayjs()
+  for (let groupId of getGroups(ext)) {
+    const groupState = getGroupState(ext, groupId)
+    if (groupState.installed && groupState.consumableTime) {
+      for (let consumable in Consumable) {
+        const c = Consumable[consumable];
+        const consumableMark = groupState.item?.[c];
+        if (consumableMark) {
+          const consumableTime = groupState.consumableTime[c]
+          if (consumableTime + ConsumableValidityPeriod[c] > now.unix()) {
+            continue;
+          }
+          useConsumableHandle(ext, groupId, c, groupState)
+        }
+      }
+    }
+  }
+}
+
+const useConsumableHandle = (ext: seal.ExtInfo, groupId: string, consumable: Consumable,
+                             groupState: GroupState = undefined) => {
+}
+
+export const setConsumableHandle = (ext: seal.ExtInfo, groupId: string, userId: string, consumable: Consumable): string | undefined => {
   const state = getGroupState(ext, groupId);
   if (!state.installed) {
     return '夏季生物还未出现，无法使用！';
