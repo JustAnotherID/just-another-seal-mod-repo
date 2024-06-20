@@ -1,11 +1,11 @@
-import { Achievement, Creature, GroupState, UserInfo, } from "./types";
+import { Achievement, Creature, GroupState, UserInfo, } from "../types";
 import { uniq } from "lodash-es";
-import { Consumable, Equipment, Item } from "./items";
+import { Consumable, Equipment, Item } from "../items";
 
 export const getGroups = (ext: seal.ExtInfo): string[] => {
   let temp = ext.storageGet('summer_creature_groups');
   if (temp) {
-    return JSON.parse(temp);
+    return uniq(JSON.parse(temp));
   } else {
     return [];
   }

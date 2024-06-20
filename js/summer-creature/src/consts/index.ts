@@ -1,6 +1,6 @@
-import { Creature } from "./types";
+import { Creature } from "../types";
 import { times } from "lodash-es";
-import { Consumable } from "./items";
+import { Consumable } from "../items";
 
 export const VERSION = '1.3.0-alpha'
 

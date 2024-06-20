@@ -1,4 +1,4 @@
-import { Consumable } from "./items";
+import { Consumable } from "../items";
 
 export enum Creature {
   mosquito = 'mosquito',

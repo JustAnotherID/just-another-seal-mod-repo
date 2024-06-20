@@ -1,14 +1,3 @@
-import {
-  timerAttackHandle,
-  defenseHandle,
-  startHandle,
-  manualReleaseHandle,
-  statusHandle,
-  stopHandle,
-  setConsumableHandle,
-  timerGrowHandle,
-  timerUseConsumableHandle
-} from './handle';
 import { DefaultCreatureIntervals, VERSION } from "./consts";
 import { Action, Creature } from "./types";
 import { isInstalled } from "./utils";
@@ -17,6 +6,16 @@ import { parseCronExpression } from "cron-schedule";
 import {
   IntervalBasedCronScheduler
 } from "cron-schedule/schedulers/interval-based.js";
+
+import {
+  setConsumableHandle,
+  timerUseConsumableHandle
+} from './handle/consumable';
+import { startHandle, stopHandle } from "./handle/start";
+import { manualReleaseHandle, timerGrowHandle } from "./handle/grow";
+import { timerAttackHandle } from "./handle/attack";
+import { defenseHandle } from "./handle/defense";
+import { statusHandle } from "./handle/status";
 
 const scheduler = new IntervalBasedCronScheduler(10 * 1000)
 
