@@ -1,0 +1,9 @@
+// ==UserScript==
+// @name         rescript插件模板
+// @author       JustAnotherID
+// @version      0.1.0
+// @description  rescript 编写插件的模板
+// @timestamp    2024-06-21 11:45:14
+// @license      MIT
+// @homepageURL  https://github.com/JustAnotherID/just-another-seal-mod-repo/tree/master/js/rescript-ext-template
+// ==/UserScript==

@@ -1,0 +1,55 @@
+{
+  "name": "rescript-ext-template",
+  "version": "0.1.0",
+  "description": "使用 rescript 编写海豹插件的模板。",
+  "type": "commonjs",
+  "main": "build/index.js",
+  "typings": "build/index.d.ts",
+  "repository": "https://github.com/JustAnotherID/just-another-seal-mod-repo/js/rescript-ext-template",
+  "license": "MIT",
+  "keywords": [
+    "sealdice",
+    "plugin",
+    "template"
+  ],
+  "scripts": {
+    "res:build": "rescript",
+    "res:clean": "rescript clean",
+    "res:dev": "rescript -w",
+    "build": "rescript && cross-env NODE_ENV=production node tools/build.js",
+    "build-dev": "rescript && cross-env NODE_ENV=dev node tools/build.js"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "dependencies": {
+    "@rescript/core": "^1.5.0",
+    "dayjs": "^1.11.11",
+    "lodash-es": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.21.5",
+    "fs-extra": "^11.2.0",
+    "rescript": "^11.1.1",
+    "source-map-support": "^0.5.21"
+  },
+  "files": [
+    "build/main",
+    "build/module",
+    "!**/*.spec.*",
+    "!**/*.json",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "prettier": {
+    "singleQuote": true
+  }
+}
