@@ -27,9 +27,9 @@ type groupInfo = {
   /** 入群迎新文本 */
   groupWelcomeMessage: string,
   /** 最后指令时间(时间戳) */
-  recentCommandTime: int,
+  recentCommandTime: float,
   /** 入群时间(时间戳) */
-  enteredTime: int,
+  enteredTime: float,
   /** 邀请人ID */
   inviteUserId: string,
 }
@@ -40,7 +40,7 @@ type groupPlayerInfo = {
   /** 用户ID */
   userId: string,
   /** 上次执行指令时间 */
-  lastCommandTime: int,
+  lastCommandTime: float,
   /** 上次发送指令时间(即sn) */
   autoSetNameTemplate: string,
 }
@@ -49,6 +49,8 @@ type sender = {
   nickname: string,
   userId: string,
 }
+
+type messageType = | @as("group") Group | @as("private") Private
 
 @unboxed
 type rowId = String(string) | Int(int)
@@ -59,9 +61,9 @@ type message = {
   /** 消息内容 */
   message: string,
   /** 发送时间 */
-  time: int,
+  time: float,
   /** 群消息/私聊消息 */
-  messageType: [#group | #"private"],
+  messageType: messageType,
   /** 群ID */
   groupId: string,
   /** 服务器ID */
@@ -77,7 +79,7 @@ type message = {
 external newMessage: unit => message = "newMessage"
 
 type msgContext = {
-  endPointInfo: endPointInfo,
+  endPoint: endPointInfo,
   /** 当前群信息 */
   groupInfo: groupInfo,
   /** 当前群内是否启用bot（注:强制@时这个值也是true，此项是给特殊指令用的） */
@@ -122,11 +124,11 @@ type cmdArgs = {
   cleanArgs: string,
 }
 
-@scope("seal") @send
-external getKwargs: (cmdArgs, string) => kwarg = "getKwargs"
+@send
+external getKwargs: (cmdArgs, string) => option<kwarg> = "getKwargs"
 
-@scope("seal") @send
-external getArgN: (cmdArgs, int) => string = "getArgN"
+@send
+external getArgN: (cmdArgs, int) => option<string> = "getArgN"
 
 type cmdExecuteResult = {
   /** 是否顺利完成执行 */
@@ -155,22 +157,23 @@ type cmdItemInfo = {
 
 type extInfo = {
   /** 名字 */
-  name: string,
+  "name": string,
   /** 版本 */
-  version: string,
+  "version": string,
   /** 作者 */
-  author: string,
+  "author": string,
   /** 指令映射 */
-  cmdMap: Js.Dict.t<cmdItemInfo>,
+  "cmdMap": Dict.t<cmdItemInfo>,
   /** 非指令关键字回调 */
-  onNotCommandReceived: (msgContext, message) => unit,
+  @set
+  "onNotCommandReceived": (msgContext, message) => unit,
 }
 
-@scope("seal") @send
+@send
 external storageSet: (extInfo, ~key: string, ~value: string) => unit = "storageSet"
 
-@scope("seal") @send
-external storageGet: (extInfo, ~key: string) => string = "storageGet"
+@send
+external storageGet: (extInfo, string) => option<string> = "storageGet"
 
 module Ext = {
   @scope(("seal", "ext")) @val
@@ -194,4 +197,95 @@ module Ext = {
 
   @scope(("seal", "ext")) @val
   external getFloatConfig: (extInfo, string) => string = "getFloatConfig"
+}
+
+/** 代骰模式下，获取被代理人信息 */
+@scope("seal")
+@val
+external getCtxProxyFirst: (msgContext, message) => msgContext = "getCtxProxyFirst"
+
+/** 回复发送者(发送者私聊即私聊回复，群内即群内回复) */
+@scope("seal")
+@val
+external replyToSender: (msgContext, message, string) => unit = "replyToSender"
+
+/** 回复发送者(私聊回复，典型应用场景如暗骰) */
+@scope("seal")
+@val
+external replyPerson: (msgContext, message, string) => unit = "replyPerson"
+
+/** 回复发送者(群内回复，私聊时无效，典型应用场景暗骰) */
+@scope("seal")
+@val
+external replyGroup: (msgContext, message, string) => unit = "replyGroup"
+
+/** 格式化文本 */
+@scope("seal")
+@val
+external format: (msgContext, string) => string = "format"
+
+/** 表示一个黑名单项目 */
+type banListInfoItem = {
+  /** 对象 ID */
+  id: string,
+  /** 对象名称 */
+  name: string,
+  /** 怒气值。*/
+  score: int,
+  /** 0 正常，-10 警告，-30 禁止，30 信任 */
+  rank: int,
+  /** 历史记录时间戳 */
+  times: array<float>,
+  /** 拉黑原因记录 */
+  reasons: array<string>,
+  /** 事发会话记录 */
+  places: array<string>,
+  /** 首次记录时间 */
+  banTime: float,
+}
+
+module Ban = {
+  /**
+   * 拉黑指定 ID
+   * @param ctx 上下文
+   * @param id 黑名单用户或群组 ID
+   * @param place 事发会话 ID
+   * @param reason 拉黑原因
+   */
+  @scope(("seal", "ban"))
+  @val
+  external addBan: (msgContext, ~id: string, ~place: string, ~reason: string) => unit = "addBan"
+
+  /**
+   * 信任指定 ID
+   * @param ctx 上下文
+   * @param id 信任用户或群组 ID
+   * @param place 事发会话 ID
+   * @param reason 信任原因
+   */
+  @scope(("seal", "ban"))
+  @val
+  external addTrust: (msgContext, ~id: string, ~place: string, ~reason: string) => unit = "addTrust"
+
+  /**
+   * 从黑名单删除相关 ID
+   * @param ctx 上下文
+   * @param id 要移除的用户 ID
+   */
+  @scope(("seal", "ban"))
+  @val
+  external remove: (msgContext, string) => unit = "remove"
+
+  /** 获取所有黑名单列表 */
+  @scope(("seal", "ban"))
+  @val
+  external getList: unit => array<banListInfoItem> = "getList"
+
+  /**
+   * 获取指定 ID 的黑名单记录。返回值可能为空。
+   * @param id 用户群组
+   */
+  @scope(("seal", "ban"))
+  @val
+  external getUser: string => Nullable.t<banListInfoItem> = "getUser"
 }

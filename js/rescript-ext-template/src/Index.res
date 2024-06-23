@@ -22,7 +22,7 @@ let main = () => {
     Seal.Ext.newCmdExecuteResult(true)
   }
 
-  Js.Dict.set(ext.cmdMap, "demo", cmdDemo)
+  Js.Dict.set(ext["cmdMap"], "demo", cmdDemo)
 }
 
 main()
