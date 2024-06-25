@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         夏季生物
 // @author       JustAnotherID
-// @version      1.3.0-alpha
-// @description  使用 .夏季生物 帮助 查看帮助，为群里增加夏季生物活动吧！\n1.3.0 - 更真实的出没机制：生物会静默增殖，当数量越多时，会越频繁出没主动攻击
+// @version      2.0.0-alpha
+// @description  使用 .夏季生物 帮助 查看帮助，为群里增加夏季生物活动吧！\n2.0.0 - 机制大改：更真实的生物出没机制、新的攻击互动、新的消耗品商店
 // @timestamp    2024-06-01 11:45:14
 // @license      MIT
 // @homepageURL  https://github.com/JustAnotherID/just-another-seal-mod-repo/tree/master/js/summer-creature

@@ -4,7 +4,7 @@ rescript 插件模板
 
 let main = () => {
   let ext = switch Seal.Ext.find("rescript-ext-template") {
-  | None =>
+  | Null | Undefined =>
     let temp = Seal.Ext.new(
       ~name="rescript-ext-template",
       ~author="JustAnotherID",
@@ -12,7 +12,7 @@ let main = () => {
     )
     Seal.Ext.register(temp)
     temp
-  | Some(e) => e
+  | Value(e) => e
   }
 
   let cmdDemo = Seal.Ext.newCmdItemInfo()
