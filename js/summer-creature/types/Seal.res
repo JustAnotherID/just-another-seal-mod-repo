@@ -125,10 +125,14 @@ type cmdArgs = {
 }
 
 @send
-external getKwargs: (cmdArgs, string) => Nullable.t<kwarg> = "getKwargs"
+external _getKwargs: (cmdArgs, string) => Nullable.t<kwarg> = "getKwargs"
+
+let getKwargs = (cmdArgs: cmdArgs, name: string) => Nullable.toOption(_getKwargs(cmdArgs, name))
 
 @send
-external getArgN: (cmdArgs, int) => Nullable.t<string> = "getArgN"
+external _getArgN: (cmdArgs, int) => Nullable.t<string> = "getArgN"
+
+let getArgN = (cmdArgs: cmdArgs, index: int) => Nullable.toOption(_getArgN(cmdArgs, index))
 
 type cmdExecuteResult = {
   /** 是否顺利完成执行 */
@@ -173,7 +177,9 @@ type extInfo = {
 external storageSet: (extInfo, ~key: string, ~value: string) => unit = "storageSet"
 
 @send
-external storageGet: (extInfo, string) => Nullable.t<string> = "storageGet"
+external _storageGet: (extInfo, string) => Nullable.t<string> = "storageGet"
+
+let storageGet = (extInfo: extInfo, key: string) => Nullable.toOption(_storageGet(extInfo, key))
 
 module Ext = {
   @scope(("seal", "ext")) @val
@@ -186,7 +192,9 @@ module Ext = {
   external register: extInfo => unit = "register"
 
   @scope(("seal", "ext")) @val
-  external find: string => Nullable.t<extInfo> = "find"
+  external _find: string => Nullable.t<extInfo> = "find"
+
+  let find = (name: string) => Nullable.toOption(_find(name))
 
   @scope(("seal", "ext")) @val
   external newCmdItemInfo: unit => cmdItemInfo = "newCmdItemInfo"
@@ -281,11 +289,12 @@ module Ban = {
   @val
   external getList: unit => array<banListInfoItem> = "getList"
 
+  @scope(("seal", "ban")) @val
+  external _getUser: string => Nullable.t<banListInfoItem> = "getUser"
+
   /**
    * 获取指定 ID 的黑名单记录。返回值可能为空。
    * @param id 用户群组
    */
-  @scope(("seal", "ban"))
-  @val
-  external getUser: string => Nullable.t<banListInfoItem> = "getUser"
+  let getUser = (id: string) => Nullable.toOption(_getUser(id))
 }

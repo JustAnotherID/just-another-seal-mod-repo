@@ -12,3 +12,7 @@ yarn.lock
 package-lock.json
 .dev/
 dev/
+
+lib/
+.bsb.lock
+*.res.js
