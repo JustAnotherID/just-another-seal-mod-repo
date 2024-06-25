@@ -13,6 +13,6 @@ package-lock.json
 .dev/
 dev/
 
-/lib/
+lib/
 .bsb.lock
 *.res.js

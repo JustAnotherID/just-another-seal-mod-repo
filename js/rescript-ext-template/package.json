@@ -2,7 +2,7 @@
   "name": "rescript-ext-template",
   "version": "0.1.0",
   "description": "使用 rescript 编写海豹插件的模板。",
-  "type": "commonjs",
+  "type": "module",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
   "repository": "https://github.com/JustAnotherID/just-another-seal-mod-repo/js/rescript-ext-template",
@@ -16,8 +16,8 @@
     "res:build": "rescript",
     "res:clean": "rescript clean",
     "res:dev": "rescript -w",
-    "build": "rescript && cross-env NODE_ENV=production node tools/build.js",
-    "build-dev": "rescript && cross-env NODE_ENV=dev node tools/build.js"
+    "build": "rescript && cross-env NODE_ENV=production node tools/Build.res.js",
+    "build-dev": "rescript && cross-env NODE_ENV=dev node tools/Build.res.js"
   },
   "engines": {
     "node": ">=10"

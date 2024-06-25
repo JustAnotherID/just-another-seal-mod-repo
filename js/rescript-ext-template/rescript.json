@@ -1,6 +1,7 @@
 {
   "name": "rescript-ext-template",
   "sources": [
+    "tools",
     "types",
     {
       "dir": "src",
