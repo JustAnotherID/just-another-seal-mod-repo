@@ -8,12 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@formkit/tempo':
+        specifier: ^0.1.2
+        version: 0.1.2
       '@rescript/core':
         specifier: ^1.5.0
         version: 1.5.0(rescript@11.1.1)
-      date-fns:
-        specifier: ^3.6.0
-        version: 3.6.0
+      core-js:
+        specifier: ^3.37.1
+        version: 3.37.1
+      dayjs:
+        specifier: ^1.11.11
+        version: 1.11.11
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -177,6 +183,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@formkit/tempo@0.1.2':
+    resolution: {integrity: sha512-jNPPbjL8oj7hK3eHX++CwbR6X4GKQt+x00/q4yeXkwynXHGKL27dylYhpEgwrmediPP4y7s0XtN1if/M/JYujg==}
+
   '@rescript/core@1.5.0':
     resolution: {integrity: sha512-XTKtpMfqCF5qmYWrdTJjhy2lDIWwwlOFgI5Vo5eB/kzRWXvM9R29ZpMoVXbn0fURl+uF3GvFp2/CbZlF3wt1Zg==}
     peerDependencies:
@@ -191,6 +200,9 @@ packages:
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
 
+  core-js@3.37.1:
+    resolution: {integrity: sha512-Xn6qmxrQZyB0FFY8E3bgRXei3lWDJHhvI+u0q9TKIYM49G8pAr0FgnnrFRAmsbptZL1yxRADVXn+x5AGsbBfyw==}
+
   cross-env@7.0.3:
     resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
     engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
@@ -200,8 +212,8 @@ packages:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
 
-  date-fns@3.6.0:
-    resolution: {integrity: sha512-fRHTG8g/Gif+kSh50gaGEdToemgfj74aRX3swtiouboip5JDLAyDE9F11nHMIcvOaXeOC6D7SpNhi7uFyB7Uww==}
+  dayjs@1.11.11:
+    resolution: {integrity: sha512-okzr3f11N6WuqYtZSvm+F776mB41wRZMhKP+hc34YdW+KmtYYK9iqvHSwo2k9FEH3fhGXvOPV6yz2IcSrfRUDg==}
 
   esbuild@0.21.5:
     resolution: {integrity: sha512-mg3OPMV4hXywwpoDxu3Qda5xCKQi+vCTZq8S9J/EpkhB2HzKXq4SNFZE3+NK93JYxc8VMSep+lOUSC/RVKaBqw==}
@@ -328,6 +340,8 @@ snapshots:
   '@esbuild/win32-x64@0.21.5':
     optional: true
 
+  '@formkit/tempo@0.1.2': {}
+
   '@rescript/core@1.5.0(rescript@11.1.1)':
     dependencies:
       rescript: 11.1.1
@@ -340,6 +354,8 @@ snapshots:
 
   buffer-from@1.1.2: {}
 
+  core-js@3.37.1: {}
+
   cross-env@7.0.3:
     dependencies:
       cross-spawn: 7.0.3
@@ -350,7 +366,7 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  date-fns@3.6.0: {}
+  dayjs@1.11.11: {}
 
   esbuild@0.21.5:
     optionalDependencies:

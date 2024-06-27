@@ -1,3 +1,29 @@
+let _ = DayLocale.zhCn
+DayLocale.setGlobalLocale("zh-cn")
+
+Day.extend(DayDuration.plugin)
+Day.extend(DayRelativeTime.plugin)
+
+let formatMilliseconds = (milliseconds: Date.msSinceEpoch) => {
+  let hourSec = 60.0 *. 60.0
+  let minuteSec = 60.0
+  let seconds = milliseconds /. 1000.0
+
+  let hh = Math.floor(seconds /. hourSec)
+  let hhStr = Float.toString(hh)
+  let mm = Math.floor(Float.mod(seconds, hourSec) /. minuteSec)
+  let mmStr = Float.toString(mm)
+  let ss = Math.floor(Float.mod(seconds, minuteSec))
+  let ssStr = Float.toString(ss)
+  if hh > 0.0 {
+    `${hhStr}小时${mmStr}分钟${ssStr}秒`
+  } else if mm > 0.0 {
+    `${mmStr}分钟${ssStr}秒`
+  } else {
+    `${ssStr}秒`
+  }
+}
+
 type logTimeInfo = {
   begin: bool,
   totalTime: Date.msSinceEpoch,
@@ -106,7 +132,7 @@ let logEnd = (extInfo: Seal.extInfo, msgContext: Seal.msgContext, ~groupId: stri
 let main = () => {
   let ext = switch Seal.Ext.find("log-timer") {
   | None =>
-    let temp = Seal.Ext.new(~name="log-timer", ~author="JustAnotherID", ~version="1.0.0")
+    let temp = Seal.Ext.new(~name="log-timer", ~author="JustAnotherID", ~version="1.1.0")
     Seal.Ext.register(temp)
     temp
   | Some(e) => e
@@ -126,33 +152,40 @@ let main = () => {
       | Some("new") | Some("on") => {
           let targetLog = cmdArgs.args[1]
           switch targetLog {
-          | Some("") | None => ()
+          | Some("") | None => Some("未指定记录名称，无法启动计时")
           | Some(targetLogName) =>
             Seal.Vars.strSet(msgContext, ~key="$t记录名称", ~value=targetLogName)
-          }
-          let beginResult = logBegin(ext, msgContext, ~groupId=message.groupId)
-          switch beginResult {
-          | Ok(result) if result.new => Some(`新记录<${result.logName}>开始计时`)
-          | Ok(result) => {
-              let now = DateFns.format(Date.now(), "yyyy-MM-dd HH:mm:ss")
-              let lastEndTime = DateFns.format(result.lastEndTime, "yyyy-MM-dd HH:mm:ss")
-              let totalTime = DateFns.formatMillisecond(result.totalTime)
-              Some(
-                `记录<${result.logName}>于${now}开始计时，之前的累计时长为${totalTime}\n（最近一次在${lastEndTime}停止计时）`,
-              )
+            let beginResult = logBegin(ext, msgContext, ~groupId=message.groupId)
+            switch beginResult {
+            | Ok(result) if result.new => {
+                let now = Day.format(Day.now(), "YYYY-MM-DD HH:mm:ss")
+                Some(`新记录「${result.logName}」于${now}开始计时`)
+              }
+            | Ok(result) => {
+                let now = Day.format(Day.now(), "YYYY-MM-DD HH:mm:ss")
+                let lastEndTime = Day.format(
+                  Day.parseTimestamp(result.lastEndTime),
+                  "YYYY-MM-DD HH:mm:ss",
+                )
+                let lastEndTimeDesc = Day.fromNow(Day.parseTimestamp(result.lastEndTime), None)
+                let totalTime = formatMilliseconds(result.totalTime)
+                Some(
+                  `记录「${result.logName}」于${now}开始计时\n截止目前累计时长：${totalTime}\n上一次于${lastEndTimeDesc}（${lastEndTime}）停止计时`,
+                )
+              }
+            | Error(err) => Some(err)
             }
-          | Error(err) => Some(err)
           }
         }
       | Some("off") | Some("end") | Some("halt") => {
           let endResult = logEnd(ext, msgContext, ~groupId=message.groupId)
           switch endResult {
           | Ok(result) => {
-              let now = DateFns.format(Date.now(), "yyyy-MM-dd HH:mm:ss")
-              let currentTime = DateFns.formatMillisecond(result.currentTime)
-              let totalTime = DateFns.formatMillisecond(result.totalTime)
+              let now = Day.format(Day.now(), "YYYY-MM-DD HH:mm:ss")
+              let currentTime = formatMilliseconds(result.currentTime)
+              let totalTime = formatMilliseconds(result.totalTime)
               Some(
-                `记录<${result.logName}>于${now}停止计时\n本次时长为${currentTime}，目前累计时长为${totalTime}`,
+                `记录「${result.logName}」于${now}停止计时\n本次时长：${currentTime}\n目前累计时长：${totalTime}`,
               )
             }
           | Error(err) => Some(err)

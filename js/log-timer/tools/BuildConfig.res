@@ -9,6 +9,8 @@ type define = {"process.env.NODE_ENV": string}
 
 type supported = {"async-await": bool}
 
+type drop = {"debugger": bool}
+
 type config = {
   bundle: bool,
   entryPoints: array<string>,
@@ -24,6 +26,7 @@ type config = {
   define: define,
   supported: supported,
   charset: string,
+  drop: array<string>,
 }
 
 let dev: config = {
@@ -31,7 +34,7 @@ let dev: config = {
   entryPoints: ["src/Index.res.js"],
   minify: false,
   outfile: "dev/" ++ filename,
-  platform: Browser,
+  platform: Node,
   color: true,
   sourcemap: true,
   \"external": ["csharp", "puerts"],
@@ -47,6 +50,7 @@ let dev: config = {
   supported: {
     "async-await": true,
   },
+  drop: ["debugger"],
   charset: "utf8",
 }
 

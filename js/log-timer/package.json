@@ -1,8 +1,8 @@
 {
   "name": "log-timer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "使用 rescript 编写海豹插件的模板。",
-  "type": "module",
+  "type": "commonjs",
   "main": "build/index.js",
   "typings": "build/index.d.ts",
   "repository": "https://github.com/JustAnotherID/just-another-seal-mod-repo/js/log-timer",
@@ -23,8 +23,10 @@
     "node": ">=10"
   },
   "dependencies": {
+    "@formkit/tempo": "^0.1.2",
     "@rescript/core": "^1.5.0",
-    "date-fns": "^3.6.0",
+    "core-js": "^3.37.1",
+    "dayjs": "^1.11.11",
     "lodash-es": "^4.17.21"
   },
   "devDependencies": {

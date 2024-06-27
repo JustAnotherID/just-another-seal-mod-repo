@@ -1,7 +1,10 @@
 {
   "name": "log-timer",
   "sources": [
-    "tools",
+    {
+      "dir": "tools",
+      "type": "dev"
+    },
     "types",
     {
       "dir": "src",
@@ -9,7 +12,7 @@
     }
   ],
   "package-specs": {
-    "module": "esmodule",
+    "module": "commonjs",
     "in-source": true
   },
   "suffix": ".res.js",
