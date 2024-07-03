@@ -132,7 +132,7 @@ let logEnd = (extInfo: Seal.extInfo, msgContext: Seal.msgContext, ~groupId: stri
 let main = () => {
   let ext = switch Seal.Ext.find("log-timer") {
   | None =>
-    let temp = Seal.Ext.new(~name="log-timer", ~author="JustAnotherID", ~version="1.1.0")
+    let temp = Seal.Ext.new(~name="log-timer", ~author="JustAnotherID", ~version="1.1.1")
     Seal.Ext.register(temp)
     temp
   | Some(e) => e
@@ -148,9 +148,36 @@ let main = () => {
       cmdArgs.command === "log" &&
       Array.length(cmdArgs.args) > 0
     ) {
-      let msg = switch cmdArgs.args[0] {
+      // 适配诸如 .log newxxx 这种不带空格的场景
+      let (arg0, arg1) = switch cmdArgs.args[0] {
+      | Some("new" as s)
+      | Some("on" as s)
+      | Some("off" as s)
+      | Some("end" as s)
+      | Some("halt" as s) => (Some(s), cmdArgs.args[1])
+      | Some(s) if String.startsWith(s, "new") => (
+          Some("new"),
+          Some(String.sliceToEnd(s, ~start=3)),
+        )
+      | Some(s) if String.startsWith(s, "on") => (Some("on"), Some(String.sliceToEnd(s, ~start=2)))
+      | Some(s) if String.startsWith(s, "off") => (
+          Some("off"),
+          Some(String.sliceToEnd(s, ~start=3)),
+        )
+      | Some(s) if String.startsWith(s, "end") => (
+          Some("end"),
+          Some(String.sliceToEnd(s, ~start=3)),
+        )
+      | Some(s) if String.startsWith(s, "halt") => (
+          Some("halt"),
+          Some(String.sliceToEnd(s, ~start=4)),
+        )
+      | _ => (None, None)
+      }
+
+      let msg = switch arg0 {
       | Some("new") | Some("on") => {
-          let targetLog = cmdArgs.args[1]
+          let targetLog = arg1
           switch targetLog {
           | Some("") | None => Some("未指定记录名称，无法启动计时")
           | Some(targetLogName) =>

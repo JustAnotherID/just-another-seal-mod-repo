@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         跑团日志计时
 // @author       JustAnotherID
-// @version      1.1.0
+// @version      1.1.1
 // @description  在使用 .log new/on/off/end/halt 命令时会提示本次跑团用时相关信息（该插件没有新增命令）
 // @timestamp    2024-06-26 11:45:14
 // @license      MIT
@@ -906,7 +906,7 @@ function main() {
   if (e !== void 0) {
     ext = Caml_option.valFromOption(e);
   } else {
-    var temp = seal.ext.new("log-timer", "JustAnotherID", "1.1.0");
+    var temp = seal.ext.new("log-timer", "JustAnotherID", "1.1.1");
     seal.ext.register(temp);
     ext = temp;
   }
@@ -914,19 +914,65 @@ function main() {
     if (!(message.messageType === "group" && cmdArgs.command === "log" && cmdArgs.args.length > 0)) {
       return;
     }
-    var match = cmdArgs.args[0];
+    var s = cmdArgs.args[0];
+    var match;
+    if (s !== void 0) {
+      var exit = 0;
+      switch (s) {
+        case "end":
+        case "halt":
+        case "new":
+        case "off":
+        case "on":
+          exit = 1;
+          break;
+        default:
+          match = s.startsWith("new") ? [
+            "new",
+            s.slice(3)
+          ] : s.startsWith("on") ? [
+            "on",
+            s.slice(2)
+          ] : s.startsWith("off") ? [
+            "off",
+            s.slice(3)
+          ] : s.startsWith("end") ? [
+            "end",
+            s.slice(3)
+          ] : s.startsWith("halt") ? [
+            "halt",
+            s.slice(4)
+          ] : [
+            void 0,
+            void 0
+          ];
+      }
+      if (exit === 1) {
+        match = [
+          s,
+          cmdArgs.args[1]
+        ];
+      }
+    } else {
+      match = [
+        void 0,
+        void 0
+      ];
+    }
+    var arg1 = match[1];
+    var arg0 = match[0];
     var msg;
-    var exit = 0;
-    if (match !== void 0) {
-      switch (match) {
+    var exit$1 = 0;
+    if (arg0 !== void 0) {
+      switch (arg0) {
         case "end":
         case "halt":
         case "off":
-          exit = 2;
+          exit$1 = 2;
           break;
         case "new":
         case "on":
-          exit = 1;
+          exit$1 = 1;
           break;
         default:
           msg = void 0;
@@ -934,11 +980,10 @@ function main() {
     } else {
       msg = void 0;
     }
-    switch (exit) {
+    switch (exit$1) {
       case 1:
-        var targetLog = cmdArgs.args[1];
-        if (targetLog !== void 0 && targetLog !== "") {
-          Seal.Vars.strSet(msgContext, "$t记录名称", targetLog);
+        if (arg1 !== void 0 && arg1 !== "") {
+          Seal.Vars.strSet(msgContext, "$t记录名称", arg1);
           var beginResult = logBegin(ext, msgContext, message.groupId);
           if (beginResult.TAG === "Ok") {
             var result = beginResult._0;

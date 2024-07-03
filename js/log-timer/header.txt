@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         跑团日志计时
 // @author       JustAnotherID
-// @version      1.1.0
+// @version      1.1.1
 // @description  在使用 .log new/on/off/end/halt 命令时会提示本次跑团用时相关信息（该插件没有新增命令）
 // @timestamp    2024-06-26 11:45:14
 // @license      MIT
