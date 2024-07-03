@@ -19,3 +19,29 @@ let manualHandle = (
 ): string => {""}
 
 let statusHandle = (ext: Seal.extInfo, ~groupId: string, ~userId: string): string => {""}
+
+let defenseHandle = (
+  ext: Seal.extInfo,
+  ~groupId: string,
+  ~userId: string,
+  ~action: Types.action,
+): string => {""}
+
+let setConsumableHandle = (
+  ext: Seal.extInfo,
+  ~groupId: string,
+  ~userId: string,
+  ~consumable: Types.consumable,
+): string => {""}
+
+let timerGrowHandle = (ext: Seal.extInfo): unit => {
+  ()
+}
+
+let timerAttackHandle = (ext: Seal.extInfo): unit => {
+  ()
+}
+
+let timerUseConsumableHandle = (ext: Seal.extInfo): unit => {
+  ()
+}

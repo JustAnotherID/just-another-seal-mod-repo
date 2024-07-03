@@ -1,6 +1,9 @@
-let version = "2.0.0-alpha"
+let _ = DayLocale.zhCn
+DayLocale.setGlobalLocale("zh-cn")
 
-let helpDesc = `夏季生物 ${version}
+Day.extend(DayDuration.plugin)
+
+let helpDesc = `夏季生物 ${Consts.version}
 .夏季生物 // 查看当前状态
 .夏季生物 (开始|停止) // 夏季生物开始/停止活动，开始后会定期出没
 .夏季生物 (帮助|help) // 查看帮助
@@ -14,10 +17,17 @@ let helpDesc = `夏季生物 ${version}
 #点蚊香
 #放蟑螂屋`
 
+let scheduler = CronScheduler.newIntervalBasedCronScheduler(10.0 *. 1000.0)
+
+let registerTask = (cronStr: string, task: unit => unit): unit => {
+  let cron = CronScheduler.parseCronExpression(cronStr)
+  let _ = CronScheduler.registerTask(scheduler, cron, task)
+}
+
 let main = () => {
   let ext = switch Seal.Ext.find("summer-creature") {
   | None => {
-      let temp = Seal.Ext.new(~name="summer-creature", ~author="JustAnotherID", ~version)
+      let temp = Seal.Ext.new(~name="summer-creature", ~author="JustAnotherID", ~version=Consts.version)
       Seal.Ext.register(temp)
       temp
     }
@@ -89,11 +99,56 @@ let main = () => {
     let message = String.trim(msg.message)
     if String.startsWith(message, "#") {
       let result = switch message {
-      | "#拍" | "#拍死" => Some("蚊子", true)
-      | "#踩" | "#踩死" => Some("蟑螂", true)
-      | "#点蚊香" | "#放蚊香" => Some("蚊香", false)
-      | "#放蟑螂屋" => Some("蟑螂屋", false)
-      | "#放杀蟑胶饵" => Some("杀蟑胶饵", false)
+      | "#拍" | "#拍死" =>
+        Some(
+          Handle.defenseHandle(
+            ext,
+            ~groupId=msg.groupId,
+            ~userId=msg.sender.userId,
+            ~action=Types.Beat,
+          ),
+          true,
+        )
+      | "#踩" | "#踩死" =>
+        Some(
+          Handle.defenseHandle(
+            ext,
+            ~groupId=msg.groupId,
+            ~userId=msg.sender.userId,
+            ~action=Types.StepOn,
+          ),
+          true,
+        )
+      | "#点蚊香" | "#放蚊香" =>
+        Some(
+          Handle.setConsumableHandle(
+            ext,
+            ~groupId=msg.groupId,
+            ~userId=msg.sender.userId,
+            ~consumable=Types.MosquitoRepellentIncense,
+          ),
+          false,
+        )
+      | "#放蟑螂屋" =>
+        Some(
+          Handle.setConsumableHandle(
+            ext,
+            ~groupId=msg.groupId,
+            ~userId=msg.sender.userId,
+            ~consumable=Types.CockroachTrap,
+          ),
+          false,
+        )
+      | "#放杀蟑胶饵" =>
+        Some(
+          Handle.setConsumableHandle(
+            ext,
+            ~groupId=msg.groupId,
+            ~userId=msg.sender.userId,
+            ~consumable=Types.CockroachGelBait,
+          ),
+          false,
+        )
       | _ => None
       }
 
@@ -105,6 +160,23 @@ let main = () => {
       }
     }
   }
+
+  /* 定时执行相关 */
+
+  // 每半小时所有群的生物繁殖一次
+  registerTask("* */30 * * * *", () => {
+    Handle.timerGrowHandle(ext)
+  })
+  // 检查生物袭击
+  registerTask("*/30 * * * * *", () => {
+    // let x = Map.get(Consts.defenseFailDescList,Types.Mosquito)
+    // Console.log(x)
+    Handle.timerAttackHandle(ext)
+  })
+  // 每十分钟蚊香等工作一次
+  registerTask("* */10 * * * *", () => {
+    Handle.timerUseConsumableHandle(ext)
+  })
 }
 
 main()
