@@ -1,4 +1,14 @@
 import { isFinite } from 'lodash-es';
+import rowDayjs from 'dayjs';
+import zhCn from 'dayjs/locale/zh-cn';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import duration from 'dayjs/plugin/duration';
+
+rowDayjs.locale(zhCn);
+rowDayjs.extend(relativeTime);
+rowDayjs.extend(duration);
+
+export const dayjs = rowDayjs;
 
 export const validateTemperature = (temperature: number): [boolean, string] => {
   if (!isFinite(temperature)) {

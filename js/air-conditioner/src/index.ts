@@ -5,6 +5,13 @@ import {
   openCloseHandle,
   temperatureHandle,
 } from './handle';
+import { parseCronExpression } from 'cron-schedule';
+import { IntervalBasedCronScheduler } from 'cron-schedule/schedulers/interval-based.js';
+import { getGroups, getSendInfo, getState, SendInfo, setState } from './store';
+import { dayjs } from './utils';
+import { round } from 'lodash-es';
+
+const scheduler = new IntervalBasedCronScheduler(10 * 1000);
 
 const helpDesc = `\
 群空调
@@ -61,7 +68,17 @@ function main() {
           seal.replyToSender(ctx, msg, '空调只能在群内使用');
           return seal.ext.newCmdExecuteResult(true);
         }
-        seal.replyToSender(ctx, msg, openCloseHandle(ext, msg.groupId, true));
+        const groupInfo: SendInfo = {
+          endpointUserId: ctx.endPoint.userId,
+          targetUserId: msg.sender.userId,
+          targetGroupId: msg.groupId,
+          targetGuildId: msg.guildId,
+        };
+        seal.replyToSender(
+          ctx,
+          msg,
+          openCloseHandle(ext, msg.groupId, true, groupInfo)
+        );
         return seal.ext.newCmdExecuteResult(true);
     }
   };
@@ -82,7 +99,17 @@ function main() {
           seal.replyToSender(ctx, msg, '空调只能在群内使用');
           return seal.ext.newCmdExecuteResult(true);
         }
-        seal.replyToSender(ctx, msg, openCloseHandle(ext, msg.groupId, false));
+        const groupInfo: SendInfo = {
+          endpointUserId: ctx.endPoint.userId,
+          targetUserId: msg.sender.userId,
+          targetGroupId: msg.groupId,
+          targetGuildId: msg.guildId,
+        };
+        seal.replyToSender(
+          ctx,
+          msg,
+          openCloseHandle(ext, msg.groupId, false, groupInfo)
+        );
         return seal.ext.newCmdExecuteResult(true);
     }
   };
@@ -126,7 +153,11 @@ function main() {
           seal.replyToSender(ctx, msg, '空调只能在群内使用');
           return seal.ext.newCmdExecuteResult(true);
         }
-        seal.replyToSender(ctx, msg, temperatureHandle(ext, msg.groupId, val1, val2));
+        seal.replyToSender(
+          ctx,
+          msg,
+          temperatureHandle(ext, msg.groupId, val1, val2)
+        );
         return seal.ext.newCmdExecuteResult(true);
     }
   };
@@ -164,6 +195,69 @@ function main() {
   ext.cmdMap['模式'] = cmdMode;
   ext.cmdMap['温度'] = cmdTemperature;
   ext.cmdMap['超频'] = cmdOCMode;
+
+  const AIR_CONDITIONER_NOTIFY_INTERVAL =
+    '空调提醒间隔/min（会四舍五入为整数）';
+  seal.ext.registerFloatConfig(
+    ext,
+    AIR_CONDITIONER_NOTIFY_INTERVAL,
+    30,
+    '空调开启后，会「大致」按照此间隔向群里发送状态，最小间隔为 5 分钟'
+  );
+
+  // 每5分钟检查一次空调状态
+  scheduler.registerTask(parseCronExpression('* */5 * * * *'), () => {
+    const now = dayjs();
+    console.log(`开始检查空调状态 ${now.format('YYYY-MM-DD HH:mm:ss')}`);
+    const epMap: { [key: string]: seal.EndPointInfo } = {};
+    const eps = seal.getEndPoints();
+    for (let ep of eps) {
+      epMap[ep.userId] = ep;
+    }
+
+    let groups = getGroups(ext);
+    console.log(`群列表 ${JSON.stringify(groups)}`);
+    for (let group of groups) {
+      const state = getState(ext, group);
+      console.log(`群 ${group} 空调状态 ${JSON.stringify(state)}`);
+      if (state?.open && state.openTime) {
+        let send = true;
+        if (state.lastSendTime) {
+          const interval = round(
+            seal.ext.getFloatConfig(ext, AIR_CONDITIONER_NOTIFY_INTERVAL)
+          );
+          const diff = now.diff(dayjs.unix(state.lastSendTime), 'minute');
+          console.log(`群 ${group} 上次间隔 ${diff}`);
+          if (diff >= interval) {
+            state.lastSendTime = now.unix();
+          } else {
+            send = false;
+          }
+        } else {
+          state.lastSendTime = now.unix();
+        }
+        setState(ext, group, state);
+
+        if (send) {
+          const sendInfo = getSendInfo(ext, group);
+          console.log(`群 ${group} 发送信息 ${JSON.stringify(sendInfo)}`);
+          if (sendInfo) {
+            const result = menuHandle(ext, group);
+            const ep = epMap[sendInfo.endpointUserId];
+            if (ep && result) {
+              const msg = seal.newMessage();
+              msg.messageType = 'group';
+              msg.groupId = sendInfo.targetGroupId;
+              msg.guildId = sendInfo.targetGuildId;
+              msg.sender.userId = sendInfo.targetUserId;
+              const ctx = seal.createTempCtx(ep, msg);
+              seal.replyToSender(ctx, msg, result);
+            }
+          }
+        }
+      }
+    }
+  });
 }
 
 main();

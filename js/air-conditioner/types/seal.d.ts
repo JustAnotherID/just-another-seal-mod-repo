@@ -169,6 +169,8 @@ declare namespace seal {
     storageSet(key: string, value: string): void;
     /** 取数据 */
     storageGet(key: string): string;
+    /** 非指令关键字回调 */
+    onNotCommandReceived: (ctx: MsgContext, msg: Message) => void;
   }
 
   interface CmdExecuteResult {
@@ -203,6 +205,11 @@ declare namespace seal {
     find(name: string): ExtInfo;
 
     newCmdItemInfo(): CmdItemInfo;
+
+    /** 注册浮点数配置项 */
+    registerFloatConfig(ext: ExtInfo, key: string, value: number, desc?: string): void;
+    /** 读取浮点数配置项 */
+    getFloatConfig(ext: ExtInfo, key: string): number;
   };
 
   interface CocRuleInfo {

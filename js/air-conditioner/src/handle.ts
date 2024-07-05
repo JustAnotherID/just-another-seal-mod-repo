@@ -1,10 +1,22 @@
+import type { SendInfo } from './store';
 import { isFinite } from 'lodash-es';
-import { getState, setState } from './store';
-import { validateOCModeTemperature, validateTemperature } from './utils';
+import {
+  addGroup,
+  deleteGroup,
+  getState,
+  setSendInfo,
+  setState,
+} from './store';
+import { dayjs, validateOCModeTemperature, validateTemperature } from './utils';
 
 export const menuHandle = (ext: seal.ExtInfo, groupId: string): string => {
   const state = getState(ext, groupId);
   let text = `当前空调${state.open ? '已开启' : '已关闭'}`;
+  const now = dayjs();
+  if (state.open && state.openTime && state.openTime !== now.unix()) {
+    let d = dayjs.duration(dayjs.unix(state.openTime).diff(now));
+    text += ' ' + d.humanize();
+  }
   if (state.open) {
     if (state.ocMode) {
       text += `[已超频]`;
@@ -20,9 +32,16 @@ export const menuHandle = (ext: seal.ExtInfo, groupId: string): string => {
 export const openCloseHandle = (
   ext: seal.ExtInfo,
   groupId: string,
-  open: boolean
+  open: boolean,
+  sendInfo: SendInfo
 ): string => {
   let state = getState(ext, groupId);
+  const now = dayjs();
+  if ((!state.open && open) || (open && !state.openTime)) {
+    state.openTime = now.unix();
+  } else if (!open) {
+    state.lastSendTime = undefined;
+  }
   state.open = open;
   if (state.open && !state.mode) {
     // init
@@ -31,17 +50,25 @@ export const openCloseHandle = (
     state.ocMode = false;
   }
   setState(ext, groupId, state);
+  setSendInfo(ext, groupId, sendInfo);
 
   if (state.open) {
-    let text = `空调已经开启，当前为${state.mode}模式`;
+    let text = `空调已经开启`;
+    if (state.openTime && state.openTime !== now.unix()) {
+      let d = dayjs.duration(dayjs.unix(state.openTime).diff(now));
+      text += ' ' + d.humanize();
+    }
+    text += `，当前为${state.mode}模式`;
     if (state.ocMode) {
       text += `[已超频]`;
     }
     if (['制冷', '制热', '除湿'].includes(state.mode)) {
       text += `，温度 ${state.temperature}°C`;
     }
+    addGroup(ext, groupId);
     return text;
   } else {
+    deleteGroup(ext, groupId);
     return '空调已经关闭';
   }
 };
