@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         群空调
 // @author       JustAnotherID
-// @version      1.2.1
+// @version      1.2.2
 // @description  使用 .空调 help 查看帮助，为群里安装空调吧（？\n 1.2.1 - 增加空调状态提醒
-// @timestamp    2024-07-05 11:45:14
+// @timestamp    2024-07-07 11:45:14
 // @license      MIT
 // @homepageURL  https://github.com/JustAnotherID/just-another-seal-mod-repo/tree/master/js/air-conditioner
 // @updateUrl    https://mirror.ghproxy.com/https://raw.githubusercontent.com/JustAnotherID/just-another-seal-mod-repo/master/js/air-conditioner/dist/%E7%BE%A4%E7%A9%BA%E8%B0%83.js
@@ -1293,11 +1293,19 @@
       if (state.ocMode) {
         text += `[已超频]`;
       }
+      let mode = state.mode;
+      if (state.temperature === 114514 || state.temperature === 1919810) {
+        mode = "制臭";
+      }
       text += `
-模式：${state.mode}`;
-      if (["制冷", "制热", "除湿"].includes(state.mode)) {
+模式：${mode}`;
+      if (["制冷", "制热", "除湿", "制臭"].includes(mode)) {
         text += `
 温度：${state.temperature}°C`;
+      }
+      if ("制臭" === mode) {
+        text += `
+哼哼啊啊啊啊啊啊啊啊啊啊——`;
       }
     }
     return text;
@@ -1324,12 +1332,20 @@
         let d = dayjs.duration(dayjs.unix(state.openTime).diff(now));
         text += " " + d.humanize();
       }
-      text += `，当前为${state.mode}模式`;
+      let mode = state.mode;
+      if (state.temperature === 114514 || state.temperature === 1919810) {
+        mode = "制臭";
+      }
+      text += `，当前为${mode}模式`;
       if (state.ocMode) {
         text += `[已超频]`;
       }
-      if (["制冷", "制热", "除湿"].includes(state.mode)) {
+      if (["制冷", "制热", "除湿", "制臭"].includes(mode)) {
         text += `，温度 ${state.temperature}°C`;
+      }
+      if ("制臭" === mode) {
+        text += `
+哼哼啊啊啊啊啊啊啊啊啊啊——`;
       }
       addGroup(ext, groupId);
       return text;
@@ -2030,7 +2046,7 @@
   function main() {
     let ext = seal.ext.find("air-conditioner");
     if (!ext) {
-      ext = seal.ext.new("air-conditioner", "JustAnotherID", "1.1.1");
+      ext = seal.ext.new("air-conditioner", "JustAnotherID", "1.2.2");
       seal.ext.register(ext);
     }
     const cmdMenu = seal.ext.newCmdItemInfo();

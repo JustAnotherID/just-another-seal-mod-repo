@@ -21,9 +21,16 @@ export const menuHandle = (ext: seal.ExtInfo, groupId: string): string => {
     if (state.ocMode) {
       text += `[已超频]`;
     }
-    text += `\n模式：${state.mode}`;
-    if (['制冷', '制热', '除湿'].includes(state.mode)) {
+    let mode = state.mode
+    if (state.temperature === 114514 || state.temperature === 1919810) {
+      mode = '制臭'
+    }
+    text += `\n模式：${mode}`;
+    if (['制冷', '制热', '除湿', '制臭'].includes(mode)) {
       text += `\n温度：${state.temperature}°C`;
+    }
+    if ('制臭' === mode) {
+      text += `\n哼哼啊啊啊啊啊啊啊啊啊啊——`
     }
   }
   return text;
@@ -58,12 +65,19 @@ export const openCloseHandle = (
       let d = dayjs.duration(dayjs.unix(state.openTime).diff(now));
       text += ' ' + d.humanize();
     }
-    text += `，当前为${state.mode}模式`;
+    let mode = state.mode
+    if (state.temperature === 114514 || state.temperature === 1919810) {
+      mode = '制臭'
+    }
+    text += `，当前为${mode}模式`;
     if (state.ocMode) {
       text += `[已超频]`;
     }
-    if (['制冷', '制热', '除湿'].includes(state.mode)) {
+    if (['制冷', '制热', '除湿', '制臭'].includes(mode)) {
       text += `，温度 ${state.temperature}°C`;
+    }
+    if ('制臭' === mode) {
+      text += `\n哼哼啊啊啊啊啊啊啊啊啊啊——`
     }
     addGroup(ext, groupId);
     return text;
