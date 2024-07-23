@@ -1,0 +1,71 @@
+{
+	"spell": [
+		{
+			"name": "秘法武器",
+			"ENG_name": "Arcane Weapon",
+			"source": "UAArtificerRevisited",
+			"page": 10,
+			"level": 1,
+			"school": "T",
+			"time": [
+				{
+					"number": 1,
+					"unit": "bonus"
+				}
+			],
+			"range": {
+				"type": "point",
+				"distance": {
+					"type": "self"
+				}
+			},
+			"components": {
+				"v": true,
+				"s": true
+			},
+			"duration": [
+				{
+					"type": "timed",
+					"duration": {
+						"type": "hour",
+						"amount": 1
+					},
+					"concentration": true
+				}
+			],
+			"entries": [
+				"你将秘法能量引导注入一把你所持握的简易或军用武器，并选择一种伤害类型：强酸、冷冻、火焰、闪电、毒素、或雷鸣。直到此法术结束前，你在使用该武器命中任何目标时将造成额外{@dice 1d6}所选类型的伤害。若该武器原本不是魔法武器，则它将在法术持续期间变成一把魔法武器。",
+				"以一个附赠动作，你可以改变该武器的伤害类型，从上述选项中选择。"
+			],
+			"entriesHigherLevel": [
+				{
+					"type": "entries",
+					"name": "升环施法效应",
+					"ENG_name": "At Higher Levels",
+					"entries": [
+						"当你使用3环或更高的法术位施放此法术时，你可以维持你在此法术的专注最多8小时。"
+					]
+				}
+			],
+			"damageInflict": [
+				"acid",
+				"cold",
+				"fire",
+				"lightning",
+				"poison",
+				"thunder"
+			],
+			"areaTags": [
+				"ST"
+			],
+			"classes": {
+				"fromClassList": [
+					{
+						"name": "Artificer (Revisited)",
+						"source": "UAArtificerRevisited"
+					}
+				]
+			}
+		}
+	]
+}
