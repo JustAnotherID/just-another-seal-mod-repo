@@ -1,4 +1,4 @@
-import { max } from 'lodash-es';
+import { max, min } from 'lodash-es';
 import spellsData from './data/spells-data.json';
 
 const spellMap = new Map(spellsData.spell.map((spell) => [spell.name, spell]));
@@ -12,7 +12,7 @@ DND5e施法辅助
 function main() {
   let ext = seal.ext.find('dnd5e-spell-helper');
   if (!ext) {
-    ext = seal.ext.new('dnd5e-spell-helper', 'JustAnotherID', '1.0.0');
+    ext = seal.ext.new('dnd5e-spell-helper', 'JustAnotherID', '1.1.0');
     seal.ext.register(ext);
   }
 
@@ -49,7 +49,6 @@ function main() {
         .map((l) => parseInt(l))
         .filter((l) => l <= rawLevel);
       targetLevel = max(levelList);
-      seal.replyToSender(ctx, msg, JSON.stringify(targetLevel));
       damageDiceStr = spellInfo.damage[targetLevel];
       if (!damageDiceStr) {
         seal.replyToSender(ctx, msg, `没有等级${rawLevel}下释放${name}的信息`);
@@ -57,7 +56,10 @@ function main() {
       }
     } else {
       // 是法术，参数是环数
-      rawLevel = parseInt(cmdArgs.getArgN(2) || '3');
+      const minLevel = min(
+        Object.keys(spellInfo.damage).map((l) => parseInt(l))
+      );
+      rawLevel = parseInt(cmdArgs.getArgN(2) || minLevel.toString());
       targetLevel = rawLevel;
       damageDiceStr = spellInfo.damage[targetLevel];
       if (!damageDiceStr) {
