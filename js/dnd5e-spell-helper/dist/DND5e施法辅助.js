@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         DND5e施法辅助
 // @author       JustAnotherID
-// @version      1.1.0
+// @version      1.1.1
 // @description  使用 .cs 戏法名 <等级> 或 .cs 法术名 <环数> 自动施法。\n\n灵感和部分代码来自小嘟嘟噜和冷筱华的「DnDSRD法术脚本」，法术数据来自 5e-bits/5e-database 和 fvtt-cn/5etools，没有他们的工作就不会有这个插件的诞生，非常感谢
 // @timestamp    2024-07-23 11:45:14
 // @license      AGPL-3.0
@@ -136,7 +136,7 @@
   function main() {
     let ext = seal.ext.find("dnd5e-spell-helper");
     if (!ext) {
-      ext = seal.ext.new("dnd5e-spell-helper", "JustAnotherID", "1.1.0");
+      ext = seal.ext.new("dnd5e-spell-helper", "JustAnotherID", "1.1.1");
       seal.ext.register(ext);
     }
     const cmdCastSpell = seal.ext.newCmdItemInfo();
@@ -188,19 +188,24 @@
       const damageTotals = [];
       const allDamageResults = [];
       for (const part of damageParts) {
-        let [diceCount, diceSides] = part.split("d").map(Number);
-        if (!diceCount) {
-          diceCount = 1;
+        if (part.includes("d")) {
+          let [diceCount, diceSides] = part.split("d").map(Number);
+          if (!diceCount) {
+            diceCount = 1;
+          }
+          const damage = Array(diceCount).fill(0).map(() => Math.floor(Math.random() * diceSides) + 1);
+          const totalDamage2 = damage.reduce((a, b) => a + b, 0);
+          damageTotals.push(totalDamage2);
+          allDamageResults.push(damage);
+        } else {
+          damageTotals.push(Number(part));
+          allDamageResults.push([Number(part)]);
         }
-        const damage = Array(diceCount).fill(0).map(() => Math.floor(Math.random() * diceSides) + 1);
-        const totalDamage2 = damage.reduce((a, b) => a + b, 0);
-        damageTotals.push(totalDamage2);
-        allDamageResults.push(damage);
       }
       const totalDamage = damageTotals.reduce((a, b) => a + b, 0);
       const finalDamageString = damageParts.map((part, index) => {
         const damageResult = allDamageResults[index];
-        return `${part}=${damageTotals[index]} (${damageResult.join("+")})`;
+        return `[${part}=${damageTotals[index]}(${damageResult.join("+")})]`;
       }).join(" + ");
       const playerName = ctx.player.name || "玩家";
       let final;
@@ -208,17 +213,17 @@
         if (spellInfo.damageInflict) {
           const levelStr = rawLevel === 1 ? "" : `于等级${rawLevel} `;
           const inflict = spellInfo.damageInflict.length === 1 ? spellInfo.damageInflict[0] + "伤害" : `伤害（${spellInfo.damageInflict.join("、")}）`;
-          final = `<${playerName}>${levelStr}释放${spellInfo.name}骰${inflict}，结果为${finalDamageString} = ${totalDamage}`;
+          final = `<${playerName}>${levelStr}释放${spellInfo.name}骰${inflict}，结果为${damageDiceStr} = ${finalDamageString} = ${totalDamage}`;
         } else {
           const levelStr = rawLevel === 1 ? "" : `在等级${rawLevel} `;
-          final = `<${playerName}>${levelStr}释放${spellInfo.name}进行掷骰，结果为${finalDamageString} = ${totalDamage}`;
+          final = `<${playerName}>${levelStr}释放${spellInfo.name}进行掷骰，结果为${damageDiceStr} = ${finalDamageString} = ${totalDamage}`;
         }
       } else {
         if (spellInfo.damageInflict) {
           const inflict = spellInfo.damageInflict.length === 1 ? spellInfo.damageInflict[0] + "伤害" : `伤害（${spellInfo.damageInflict.join("、")}）`;
-          final = `<${playerName}>为${targetLevel}环${spellInfo.name}骰${inflict}，结果为${finalDamageString} = ${totalDamage}`;
+          final = `<${playerName}>为${targetLevel}环${spellInfo.name}骰${inflict}，结果为${damageDiceStr} = ${finalDamageString} = ${totalDamage}`;
         } else {
-          final = `<${playerName}>为${targetLevel}环${spellInfo.name}进行掷骰，结果为${finalDamageString} = ${totalDamage}`;
+          final = `<${playerName}>为${targetLevel}环${spellInfo.name}进行掷骰，结果为${damageDiceStr} = ${finalDamageString} = ${totalDamage}`;
         }
       }
       seal.replyToSender(ctx, msg, final);

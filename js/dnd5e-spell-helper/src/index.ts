@@ -12,7 +12,7 @@ DND5e施法辅助
 function main() {
   let ext = seal.ext.find('dnd5e-spell-helper');
   if (!ext) {
-    ext = seal.ext.new('dnd5e-spell-helper', 'JustAnotherID', '1.1.0');
+    ext = seal.ext.new('dnd5e-spell-helper', 'JustAnotherID', '1.1.1');
     seal.ext.register(ext);
   }
 
@@ -74,23 +74,28 @@ function main() {
     const allDamageResults = [];
 
     for (const part of damageParts) {
-      let [diceCount, diceSides] = part.split('d').map(Number);
-      if (!diceCount) {
-        diceCount = 1;
+      if (part.includes('d')) {
+        let [diceCount, diceSides] = part.split('d').map(Number);
+        if (!diceCount) {
+          diceCount = 1;
+        }
+        const damage = Array(diceCount)
+          .fill(0)
+          .map(() => Math.floor(Math.random() * diceSides) + 1);
+        const totalDamage = damage.reduce((a, b) => a + b, 0);
+        damageTotals.push(totalDamage);
+        allDamageResults.push(damage);
+      } else {
+        damageTotals.push(Number(part));
+        allDamageResults.push([Number(part)]);
       }
-      const damage = Array(diceCount)
-        .fill(0)
-        .map(() => Math.floor(Math.random() * diceSides) + 1);
-      const totalDamage = damage.reduce((a, b) => a + b, 0);
-      damageTotals.push(totalDamage);
-      allDamageResults.push(damage);
     }
 
     const totalDamage = damageTotals.reduce((a, b) => a + b, 0);
     const finalDamageString = damageParts
       .map((part, index) => {
         const damageResult = allDamageResults[index];
-        return `${part}=${damageTotals[index]} (${damageResult.join('+')})`;
+        return `[${part}=${damageTotals[index]}(${damageResult.join('+')})]`;
       })
       .join(' + ');
 
@@ -104,10 +109,10 @@ function main() {
           spellInfo.damageInflict.length === 1
             ? spellInfo.damageInflict[0] + '伤害'
             : `伤害（${spellInfo.damageInflict.join('、')}）`;
-        final = `<${playerName}>${levelStr}释放${spellInfo.name}骰${inflict}，结果为${finalDamageString} = ${totalDamage}`;
+        final = `<${playerName}>${levelStr}释放${spellInfo.name}骰${inflict}，结果为${damageDiceStr} = ${finalDamageString} = ${totalDamage}`;
       } else {
         const levelStr = rawLevel === 1 ? '' : `在等级${rawLevel} `;
-        final = `<${playerName}>${levelStr}释放${spellInfo.name}进行掷骰，结果为${finalDamageString} = ${totalDamage}`;
+        final = `<${playerName}>${levelStr}释放${spellInfo.name}进行掷骰，结果为${damageDiceStr} = ${finalDamageString} = ${totalDamage}`;
       }
     } else {
       if (spellInfo.damageInflict) {
@@ -115,9 +120,9 @@ function main() {
           spellInfo.damageInflict.length === 1
             ? spellInfo.damageInflict[0] + '伤害'
             : `伤害（${spellInfo.damageInflict.join('、')}）`;
-        final = `<${playerName}>为${targetLevel}环${spellInfo.name}骰${inflict}，结果为${finalDamageString} = ${totalDamage}`;
+        final = `<${playerName}>为${targetLevel}环${spellInfo.name}骰${inflict}，结果为${damageDiceStr} = ${finalDamageString} = ${totalDamage}`;
       } else {
-        final = `<${playerName}>为${targetLevel}环${spellInfo.name}进行掷骰，结果为${finalDamageString} = ${totalDamage}`;
+        final = `<${playerName}>为${targetLevel}环${spellInfo.name}进行掷骰，结果为${damageDiceStr} = ${finalDamageString} = ${totalDamage}`;
       }
     }
     seal.replyToSender(ctx, msg, final);
