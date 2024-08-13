@@ -10,8 +10,6 @@
 // @updateUrl    https://raw.githubusercontent.com/JustAnotherID/just-another-seal-mod-repo/master/js/dnd5e-spell-helper/dist/DND5e%E6%96%BD%E6%B3%95%E8%BE%85%E5%8A%A9.js
 // ==/UserScript==
 
-// ==/UserScript==
-
 (() => {
   // node_modules/.pnpm/lodash-es@4.17.21/node_modules/lodash-es/_freeGlobal.js
   var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
