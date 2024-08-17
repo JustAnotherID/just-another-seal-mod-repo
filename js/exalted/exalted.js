@@ -36,6 +36,7 @@ const handleRex = (msg, cmdArgs) => {
   let detailList = []
   let successNum = 0
   let dSuccessNum = 0
+  let hasOne = false // 是否有1，用于后续判断是否是大失败
   for (let num of pool) {
     if (num >= doubleSuccess)   {
       dSuccessNum++
@@ -46,12 +47,19 @@ const handleRex = (msg, cmdArgs) => {
     } else {
       detailList.push(`${num}`)
     }
+
+    if (num === 1) {
+      hasOne = true
+    }
   }
   let res = successNum + dSuccessNum * 2 // 最后成功数
 
   let content = `<${msg.sender.nickname}>掷出了${exec}={${detailList.join(",")}}=${res}`
   if (reason && reason !== "") {
     content = `由于${reason}，${content}`
+  }
+  if (res === 0 && hasOne) {
+    content += " 大失败！"
   }
   return content
 }
