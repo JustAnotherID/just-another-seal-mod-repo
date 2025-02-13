@@ -1,6 +1,6 @@
 {
   "name": "log-timer",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "使用 rescript 编写海豹插件的模板。",
   "type": "commonjs",
   "main": "build/index.js",

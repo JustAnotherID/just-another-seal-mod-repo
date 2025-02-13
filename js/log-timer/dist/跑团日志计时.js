@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         跑团日志计时
 // @author       JustAnotherID
-// @version      1.1.1
+// @version      1.1.2
 // @description  在使用 .log new/on/off/end/halt 命令时会提示本次跑团用时相关信息（该插件没有新增命令）
-// @timestamp    2024-06-26 11:45:14
+// @timestamp    2025-02-13 11:45:14
 // @license      MIT
 // @homepageURL  https://github.com/JustAnotherID/just-another-seal-mod-repo/tree/master/js/log-timer
-// @updateUrl    https://mirror.ghproxy.com/https://raw.githubusercontent.com/JustAnotherID/just-another-seal-mod-repo/master/js/log-timer/dist/%E8%B7%91%E5%9B%A2%E6%97%A5%E5%BF%97%E8%AE%A1%E6%97%B6.js
+// @updateUrl    https://ghproxy.justanotherid.com/https://raw.githubusercontent.com/JustAnotherID/just-another-seal-mod-repo/master/js/log-timer/dist/%E8%B7%91%E5%9B%A2%E6%97%A5%E5%BF%97%E8%AE%A1%E6%97%B6.js
 // @updateUrl    https://raw.githubusercontent.com/JustAnotherID/just-another-seal-mod-repo/master/js/summer-creature/log-timer/%E8%B7%91%E5%9B%A2%E6%97%A5%E5%BF%97%E8%AE%A1%E6%97%B6.js
 // ==/UserScript==
 
