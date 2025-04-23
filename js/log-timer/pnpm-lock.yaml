@@ -36,12 +36,12 @@ importers:
       fs-extra:
         specifier: ^11.2.0
         version: 11.2.0
-      rescript:
-        specifier: ^11.1.1
-        version: 11.1.1
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
 
 packages:
 
@@ -260,6 +260,11 @@ packages:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
 
+  typescript@5.8.3:
+    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   universalify@2.0.1:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
@@ -428,6 +433,8 @@ snapshots:
       source-map: 0.6.1
 
   source-map@0.6.1: {}
+
+  typescript@5.8.3: {}
 
   universalify@2.0.1: {}
 
